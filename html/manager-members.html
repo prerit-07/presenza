@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Presenza - Members</title>
+<link rel="icon" type="image/svg+xml" href="../images/presenza-logo.svg">
+<link rel="stylesheet" href="../css/theme.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+</head>
+<body data-role="manager" data-page="members" data-title="Members" data-subtitle="Attendance performance for everyone on your team">
+
+<main>
+  <div class="ps-table-wrap" style="margin-bottom: 20px;">
+    <table class="ps-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email Address</th>
+          <th>Joined Via</th>
+          <th>Status</th>
+          <th>Attendance</th>
+        </tr>
+      </thead>
+      <tbody id="mmTableBody"></tbody>
+    </table>
+  </div>
+
+  <div style="display:flex; justify-content:flex-end;">
+    <button class="ps-btn ps-btn-primary" id="pendingBtn">Pending requests</button>
+  </div>
+</main>
+
+<style>
+  .attendance-bar-wrap { display:flex; align-items:center; gap:8px; }
+  .attendance-bar-track { width: 70px; height: 6px; border-radius: 4px; background: var(--surface-200); overflow:hidden; }
+  .attendance-bar-fill { height: 100%; background: var(--gradient-brand); }
+</style>
+
+<script src="../js/icons.js"></script>
+<script src="../js/data.js"></script>
+<script src="../js/shell.js"></script>
+<script src="../js/manager-members.js"></script>
+</body>
+</html>

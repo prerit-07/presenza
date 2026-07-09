@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Presenza - Manager</title>
+<link rel="icon" type="image/svg+xml" href="../images/presenza-logo.svg">
+<link rel="stylesheet" href="../css/theme.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+</head>
+<body data-role="manager" data-page="overview" data-title="Overview" data-subtitle="Today's snapshot across your team">
+
+<main>
+  <h2 class="ov-greeting">Hey <span id="ovGreetName">there</span>!</h2>
+
+  <div class="ps-stat-grid ov-stat-grid">
+    <div class="ps-stat-card ov-stat-card">
+      <div class="ps-stat-icon" id="iconPresent"></div>
+      <div class="ps-stat-value" id="statPresent">0</div>
+      <div class="ps-stat-label">Present today</div>
+    </div>
+    <div class="ps-stat-card ov-stat-card">
+      <div class="ps-stat-icon" id="iconLate"></div>
+      <div class="ps-stat-value" id="statLate">0</div>
+      <div class="ps-stat-label">Late today</div>
+    </div>
+    <div class="ps-stat-card ov-stat-card">
+      <div class="ps-stat-icon" id="iconAbsent"></div>
+      <div class="ps-stat-value" id="statAbsent">0</div>
+      <div class="ps-stat-label">Absent today</div>
+    </div>
+    <div class="ps-stat-card ov-stat-card">
+      <div class="ps-stat-icon" id="iconTickets"></div>
+      <div class="ps-stat-value" id="statTickets">0</div>
+      <div class="ps-stat-label">Open tickets</div>
+    </div>
+  </div>
+
+  <div class="ps-stat-grid ov-stat-grid ov-stat-grid-secondary">
+    <div class="ps-stat-card ov-stat-card-light">
+      <div class="ps-stat-icon" id="iconRate"></div>
+      <div class="ps-stat-value" id="statRate">0%</div>
+      <div class="ps-stat-label">Attendance rate today</div>
+    </div>
+    <div class="ps-stat-card ov-stat-card-light">
+      <div class="ps-stat-icon" id="iconOnLeave"></div>
+      <div class="ps-stat-value" id="statOnLeave">0</div>
+      <div class="ps-stat-label">On leave today</div>
+    </div>
+    <div class="ps-stat-card ov-stat-card-light">
+      <div class="ps-stat-icon" id="iconPendingLeave"></div>
+      <div class="ps-stat-value" id="statPendingLeave">0</div>
+      <div class="ps-stat-label">Pending leave requests</div>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 22px; align-items:start;">
+    <div class="ps-card">
+      <div class="ps-section-head"><div class="ps-section-title">Needs attention</div></div>
+      <div id="alertsList"></div>
+    </div>
+
+    <div class="ps-card ov-activity-card">
+      <div class="ps-section-head">
+        <div class="ps-section-title">Quick links</div>
+      </div>
+      <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap: 14px;">
+        <a href="shifts.html" class="quick-link-card">
+          <div class="quick-link-icon" id="qlShifts"></div>
+          <div>Shifts & Timetable</div>
+        </a>
+        <a href="attendance.html" class="quick-link-card">
+          <div class="quick-link-icon" id="qlAttendance"></div>
+          <div>View Attendance</div>
+        </a>
+        <a href="tickets.html" class="quick-link-card">
+          <div class="quick-link-icon" id="qlTickets"></div>
+          <div>Review Tickets</div>
+        </a>
+        <a href="manager-members.html" class="quick-link-card">
+          <div class="quick-link-icon" id="qlMembers"></div>
+          <div>Manage Members</div>
+        </a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<style>
+  .ov-greeting {
+    font-family: var(--font-heading);
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--brand-700);
+    margin: 4px 0 22px;
+  }
+
+  .ov-stat-grid { gap: 18px; margin-bottom: 18px; }
+  .ov-stat-grid-secondary { grid-template-columns: repeat(3, 1fr); }
+  .ov-stat-card {
+    background: linear-gradient(155deg, var(--brand-500) 0%, var(--brand-700) 100%);
+    border: none;
+    box-shadow: 0 10px 26px rgba(41,24,92,0.28);
+    position: relative;
+    overflow: hidden;
+  }
+  .ov-stat-card::before {
+    content: '';
+    position: absolute; top: -30px; right: -30px;
+    width: 100px; height: 100px; border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+  }
+  .ov-stat-card .ps-stat-icon {
+    background: rgba(255,255,255,0.16);
+    color: #fff;
+  }
+  .ov-stat-card .ps-stat-value { color: #fff; }
+  .ov-stat-card .ps-stat-label { color: rgba(255,255,255,0.75); }
+
+  .ov-stat-card-light {
+    background: var(--surface-100);
+    border: 1px solid var(--surface-border);
+    box-shadow: none;
+  }
+  .ov-stat-card-light::before { display: none; }
+  .ov-stat-card-light .ps-stat-icon { background: var(--brand-100); color: var(--brand-600); }
+  .ov-stat-card-light .ps-stat-value { font-size: 22px; color: var(--text-900); }
+  .ov-stat-card-light .ps-stat-label { color: var(--text-500); }
+
+  .alert-row {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:10px 0; border-bottom:1px solid var(--surface-200);
+  }
+  .alert-row:last-child { border-bottom: none; }
+  .alert-name { font-weight:600; }
+  .alert-detail { font-size:12.5px; color:var(--text-500); }
+
+  .ov-activity-card {
+    background: linear-gradient(155deg, var(--brand-500) 0%, var(--brand-700) 100%);
+    border: none;
+    box-shadow: 0 10px 26px rgba(41,24,92,0.28);
+  }
+  .ov-activity-card .ps-section-title { color: #fff; font-size: 18px; }
+
+  .quick-link-card {
+    display: flex; align-items: center; gap: 12px;
+    padding: 16px; border-radius: var(--radius-md);
+    border: 1px solid rgba(255,255,255,0.16);
+    background: rgba(255,255,255,0.06);
+    text-decoration: none; color: #fff; font-weight: 700; font-size: 13.5px;
+    transition: box-shadow 0.15s ease, background 0.15s ease;
+  }
+  .quick-link-card:hover { background: rgba(255,255,255,0.12); box-shadow: var(--shadow-md); }
+  .quick-link-icon {
+    width: 34px; height: 34px; border-radius: 10px;
+    background: rgba(255,255,255,0.16); color: #fff;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+</style>
+
+<script src="../js/icons.js"></script>
+<script src="../js/data.js"></script>
+<script src="../js/shell.js"></script>
+<script src="../js/manager.js"></script>
+</body>
+</html>
