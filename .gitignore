@@ -1,0 +1,13 @@
+# IDE folders
+.idea/
+.vscode/
+
+# Build output
+backend/target/
+*.class
+*.jar
+*.war
+
+# OS files
+.DS_Store
+Thumbs.db

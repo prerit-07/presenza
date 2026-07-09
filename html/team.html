@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Presenza - Team Management</title>
+<link rel="icon" type="image/svg+xml" href="../images/presenza-logo.svg">
+<link rel="stylesheet" href="../css/theme.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+</head>
+<body data-role="organization" data-page="team" data-title="Team Management" data-subtitle="Admins and managers who help run your organization">
+
+<main>
+  <div class="ps-card ps-card-accent" style="margin-bottom: 20px; min-height: 200px;">
+    <div id="teamCard"></div>
+  </div>
+
+  <div style="display:flex; justify-content:flex-end;">
+    <button class="ps-btn ps-btn-primary" id="addMemberBtn">Add team member</button>
+  </div>
+</main>
+
+<style>
+  .team-member-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.14);
+  }
+  .team-member-row:last-child { border-bottom: none; }
+  .team-avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: rgba(255,255,255,0.18); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 13px; flex-shrink: 0;
+  }
+  .team-name { font-weight: 700; font-size: 13.5px; color: #fff; }
+  .team-role { font-size: 12px; color: rgba(255,255,255,0.65); font-weight: 600; }
+</style>
+
+<script src="../js/icons.js"></script>
+<script src="../js/data.js"></script>
+<script src="../js/shell.js"></script>
+<script src="../js/team.js"></script>
+</body>
+</html>

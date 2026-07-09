@@ -1,0 +1,49 @@
+.signup-form h2 { margin-bottom: 6px; }
+
+.ps-optional {
+  color: var(--text-400);
+  font-weight: 500;
+  text-transform: none;
+}
+
+.signup-tabs {
+  display: flex;
+  background: var(--surface-100);
+  border-radius: var(--radius-pill);
+  padding: 4px;
+  margin: 20px 0 22px;
+}
+
+.signup-tab {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--text-500);
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 9px 10px;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.signup-tab:hover { color: var(--text-700); }
+
+.signup-tab.active {
+  background: var(--surface-0);
+  color: var(--brand-700);
+  box-shadow: var(--shadow-sm);
+}
+
+.signup-panel { display: none; }
+.signup-panel.active { display: block; }
+
+.signup-footer {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-500);
+  margin-top: 18px;
+}
+.signup-footer a { color: var(--brand-600); font-weight: 700; }

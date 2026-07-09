@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Presenza - Attendance Record</title>
+<link rel="icon" type="image/svg+xml" href="../images/presenza-logo.svg">
+<link rel="stylesheet" href="../css/theme.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+</head>
+<body data-role="manager" data-page="attendance" data-title="Attendance Record" data-subtitle="Real-time check-in / check-out log">
+
+<main>
+  <div class="ps-card attendance-filter-bar">
+    <button class="ps-btn ps-btn-ghost" id="dateBtn">28-06-26</button>
+    <select class="attendance-filter-select" id="statusFilter">
+      <option>All status</option>
+      <option>Present</option>
+      <option>Absent</option>
+      <option>On Leave</option>
+    </select>
+    <button class="ps-btn ps-btn-primary attendance-export-btn" id="exportBtn">Export</button>
+  </div>
+
+  <div class="ps-table-wrap">
+    <table class="ps-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Check-In</th>
+          <th>Check-Out</th>
+          <th>Zone</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="attendanceBody"></tbody>
+    </table>
+  </div>
+
+  <div class="ps-card" style="margin-top:20px;">
+    <div class="ps-section-head"><div class="ps-section-title">Date-range report</div></div>
+    <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:14px;">
+      <input type="date" id="reportFrom" class="attendance-filter-select">
+      <span style="color:var(--text-500);">to</span>
+      <input type="date" id="reportTo" class="attendance-filter-select">
+      <button class="ps-btn ps-btn-ghost" id="reportViewBtn">View report</button>
+      <button class="ps-btn ps-btn-primary" id="reportExportBtn">Export CSV</button>
+    </div>
+    <div class="ps-table-wrap">
+      <table class="ps-table">
+        <thead>
+          <tr>
+            <th>Name</th><th>Present</th><th>Late</th><th>On Leave</th><th>Absent</th><th>Working Days</th><th>Rate</th>
+          </tr>
+        </thead>
+        <tbody id="reportBody"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<style>
+  .attendance-filter-bar {
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .attendance-filter-select {
+    padding: 10px 16px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--surface-border);
+    background: var(--surface-100);
+    color: var(--text-700);
+    font-weight: 700;
+    font-size: 13px;
+    font-family: var(--font-body);
+    cursor: pointer;
+  }
+  .attendance-filter-select:focus { outline: none; border-color: var(--brand-400); }
+  .attendance-export-btn { margin-left: auto; }
+</style>
+
+<script src="../js/icons.js"></script>
+<script src="../js/data.js"></script>
+<script src="../js/shell.js"></script>
+<script src="../js/attendance.js"></script>
+</body>
+</html>

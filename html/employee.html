@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Presenza - My Dashboard</title>
+<link rel="icon" type="image/svg+xml" href="../images/presenza-logo.svg">
+<link rel="stylesheet" href="../css/theme.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+</head>
+<body data-role="employee" data-page="home" data-title="My Dashboard" data-subtitle="Check in, track your attendance, and manage leave">
+
+<main>
+  <div class="checkin-hero">
+    <div>
+      <div class="checkin-status" id="checkinStatus">Not checked in yet</div>
+      <div class="checkin-sub" id="checkinSub">Loading shift…</div>
+    </div>
+    <button class="ps-btn ps-btn-primary checkin-btn" id="checkinBtn">Check In</button>
+  </div>
+
+  <div class="ps-stat-grid">
+    <div class="ps-stat-card">
+      <div class="ps-stat-icon" id="iconAttendance"></div>
+      <div class="ps-stat-value" id="statAttendance">-</div>
+      <div class="ps-stat-label">Attendance rate</div>
+    </div>
+    <div class="ps-stat-card">
+      <div class="ps-stat-icon" id="iconStreak"></div>
+      <div class="ps-stat-value" id="statStreak">-</div>
+      <div class="ps-stat-label">Day streak</div>
+    </div>
+    <div class="ps-stat-card">
+      <div class="ps-stat-icon" id="iconLeave"></div>
+      <div class="ps-stat-value" id="statLeave">-</div>
+      <div class="ps-stat-label">Leaves remaining</div>
+    </div>
+    <div class="ps-stat-card">
+      <div class="ps-stat-icon" id="iconVerif"></div>
+      <div class="ps-stat-value" id="statVerif">-</div>
+      <div class="ps-stat-label">Verification mode</div>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1.4fr 1fr; gap: 20px; align-items:start;">
+    <div class="ps-table-wrap">
+      <table class="ps-table">
+        <thead>
+          <tr><th>Date</th><th>Check-In</th><th>Check-Out</th><th>Zone</th><th>Status</th></tr>
+        </thead>
+        <tbody id="historyBody"></tbody>
+      </table>
+    </div>
+
+    <div class="ps-card">
+      <div class="ps-section-head"><div class="ps-section-title">Apply for Leave</div></div>
+      <div class="ps-alert ps-alert-error" id="leaveError"></div>
+      <div class="ps-alert ps-alert-success" id="leaveSuccess">Leave request submitted</div>
+      <div class="ps-field">
+        <label>From date</label>
+        <input type="date" id="leaveFrom">
+      </div>
+      <div class="ps-field">
+        <label>To date</label>
+        <input type="date" id="leaveTo">
+      </div>
+      <div class="ps-field">
+        <label>Reason</label>
+        <input type="text" id="leaveReason" placeholder="e.g. Medical appointment">
+      </div>
+      <button class="ps-btn ps-btn-primary" id="leaveSubmitBtn" style="width:100%; justify-content:center;">Submit Request</button>
+    </div>
+  </div>
+</main>
+
+<style>
+  .checkin-hero {
+    background: var(--gradient-dark);
+    border-radius: var(--radius-lg);
+    padding: 26px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 22px;
+    color: #fff;
+    box-shadow: var(--shadow-lg);
+  }
+  .checkin-status { font-family: var(--font-heading); font-size: 19px; font-weight: 700; margin-bottom: 6px; }
+  .checkin-sub { font-size: 12.5px; color: rgba(255,255,255,0.65); font-weight: 500; }
+  .checkin-btn { padding: 13px 30px; font-size: 14px; }
+  .checkin-btn.checked-in { background: rgba(34,197,94,0.15); color: #4ade80; box-shadow: none; }
+</style>
+
+<script src="../js/icons.js"></script>
+<script src="../js/data.js"></script>
+<script src="../js/shell.js"></script>
+<script src="../js/employee.js"></script>
+</body>
+</html>

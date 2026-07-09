@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Presenza — Pricing</title>
+<link rel="icon" type="image/svg+xml" href="../images/presenza-logo.svg">
+<link rel="stylesheet" href="../css/theme.css">
+<link rel="stylesheet" href="../css/marketing.css">
+<link rel="stylesheet" href="../css/pricing.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<nav class="mkt-navbar">
+  <div class="mkt-nav-inner">
+    <a href="index.html" class="mkt-logo">
+      <span class="mark"><img src="../images/presenza-logo.svg" alt="Presenza" class="ps-logo"></span>
+      <span class="name">Presenza</span>
+    </a>
+    <div class="mkt-nav-links">
+      <a href="index.html">Home</a>
+      <a href="index.html#features">Features</a>
+      <div class="mkt-nav-dropdown">
+        <a href="index.html#how" class="mkt-nav-dropdown-trigger">
+          Solutions
+          <svg class="chev" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </a>
+        <div class="mkt-dropdown-panel">
+          <div class="mkt-dropdown-col">
+            <span class="mkt-dropdown-heading">By Industry</span>
+            <a href="index.html#how">Education</a>
+            <a href="index.html#how">Corporate &amp; Offices</a>
+            <a href="index.html#how">Healthcare</a>
+            <a href="index.html#how">Manufacturing</a>
+            <a href="index.html#how">Retail &amp; Field Teams</a>
+          </div>
+          <div class="mkt-dropdown-col">
+            <span class="mkt-dropdown-heading">By Size</span>
+            <a href="index.html#how">Small Teams</a>
+            <a href="index.html#how">Growing Business</a>
+            <a href="index.html#how">Enterprise</a>
+          </div>
+        </div>
+      </div>
+      <a href="pricing.html" class="active">Pricing</a>
+      <a href="index.html#about">About</a>
+    </div>
+    <div class="mkt-nav-actions">
+      <a href="login.html" class="mkt-nav-login">Log in</a>
+      <a href="login.html" class="ps-btn ps-btn-primary">Get Started</a>
+    </div>
+  </div>
+</nav>
+
+<header class="pricing-hero">
+  <span class="mkt-eyebrow">PRICING</span>
+  <h1>Simple, transparent pricing<br>for every team size</h1>
+  <p>Start free. Upgrade the moment you need more zones, more members, or deeper insight — no surprises, no forced contracts.</p>
+
+  <div class="pricing-toggle" id="pricingToggle">
+    <span class="pt-label active" data-mode="monthly">Monthly</span>
+    <button class="pt-switch" id="ptSwitch" aria-label="Toggle yearly billing"><span class="pt-knob"></span></button>
+    <span class="pt-label" data-mode="yearly">Yearly</span>
+    <span class="pt-save">Save 20%</span>
+  </div>
+</header>
+
+<section class="pricing-plans">
+  <div class="pricing-card reveal">
+    <div class="pc-top">
+      <span class="pc-name">Free</span>
+      <p class="pc-desc">For small teams just getting started.</p>
+    </div>
+    <div class="pc-price">
+      <span class="pc-amount">₹0</span>
+      <span class="pc-period">forever</span>
+    </div>
+    <a href="login.html" class="ps-btn ps-btn-ghost pc-cta">Get Started</a>
+    <ul class="pc-features">
+      <li><span class="pc-check">✓</span> Up to 25 members</li>
+      <li><span class="pc-check">✓</span> 1 geofence zone</li>
+      <li><span class="pc-check">✓</span> Basic WiFi BSSID check</li>
+      <li><span class="pc-check">✓</span> Attendance history</li>
+      <li><span class="pc-check">✓</span> Email support</li>
+    </ul>
+  </div>
+
+  <div class="pricing-card featured reveal">
+    <span class="pc-badge">Most Popular</span>
+    <div class="pc-top">
+      <span class="pc-name">Standard</span>
+      <p class="pc-desc">For growing organizations that need real control.</p>
+    </div>
+    <div class="pc-price">
+      <span class="pc-amount" data-monthly="₹99" data-yearly="₹79">₹99</span>
+      <span class="pc-period">/ user / month</span>
+    </div>
+    <a href="login.html" class="ps-btn ps-btn-primary pc-cta">Get Started</a>
+    <ul class="pc-features">
+      <li><span class="pc-check">✓</span> Up to 200 members</li>
+      <li><span class="pc-check">✓</span> Unlimited geofence zones</li>
+      <li><span class="pc-check">✓</span> GPS + WiFi dual verification</li>
+      <li><span class="pc-check">✓</span> Real-time analytics dashboard</li>
+      <li><span class="pc-check">✓</span> Leave &amp; roster automation</li>
+      <li><span class="pc-check">✓</span> Priority email support</li>
+    </ul>
+  </div>
+
+  <div class="pricing-card reveal">
+    <div class="pc-top">
+      <span class="pc-name">Enterprise</span>
+      <p class="pc-desc">For large, multi-branch deployments.</p>
+    </div>
+    <div class="pc-price">
+      <span class="pc-amount pc-amount-custom">Custom</span>
+      <span class="pc-period">talk to sales</span>
+    </div>
+    <a href="#faq" class="ps-btn ps-btn-ghost pc-cta">Contact Sales</a>
+    <ul class="pc-features">
+      <li><span class="pc-check">✓</span> Up to 1000+ members</li>
+      <li><span class="pc-check">✓</span> Multi-branch geofencing</li>
+      <li><span class="pc-check">✓</span> Custom integrations &amp; SSO</li>
+      <li><span class="pc-check">✓</span> Dedicated onboarding</li>
+      <li><span class="pc-check">✓</span> SLA-backed uptime</li>
+      <li><span class="pc-check">✓</span> 24/7 priority support</li>
+    </ul>
+  </div>
+</section>
+
+<p class="pricing-quote-note reveal">Have more than 1,000 members? <a href="#faq">Ask for a price quote →</a></p>
+
+<section class="pricing-compare" id="compare">
+  <div class="mkt-section-head">
+    <span class="mkt-eyebrow">COMPARE</span>
+    <h2>Every plan, side by side</h2>
+    <p>A closer look at what's included at each tier.</p>
+  </div>
+
+  <div class="compare-table-wrap reveal">
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th class="ct-feature-col">Feature</th>
+          <th>Free</th>
+          <th class="ct-featured-col">Standard</th>
+          <th>Enterprise</th>
+        </tr>
+      </thead>
+      <tbody id="compareBody"></tbody>
+    </table>
+  </div>
+</section>
+
+<section class="mkt-section pricing-faq" id="faq">
+  <div class="mkt-section-head">
+    <span class="mkt-eyebrow">FAQ</span>
+    <h2>Frequently asked questions</h2>
+  </div>
+  <div class="faq-list reveal" id="faqList"></div>
+</section>
+
+<section class="mkt-cta-banner reveal">
+  <canvas id="ctaNetCanvas" class="mkt-net-canvas"></canvas>
+  <div class="mkt-cta-content">
+    <h2>Ready to make attendance fraud impossible?</h2>
+    <p>Start on the Free plan today — upgrade whenever your team is ready.</p>
+    <a href="login.html" class="ps-btn ps-btn-primary">Get Started</a>
+  </div>
+</section>
+
+<footer class="mkt-footer" id="about">
+  <div class="mkt-footer-inner">
+    <div class="mkt-footer-brand">
+      <div class="mkt-logo"><span class="mark"><img src="../images/presenza-logo.svg" alt="Presenza" class="ps-logo"></span><span class="name">Presenza</span></div>
+      <p>GPS + WiFi dual-verification attendance, built for organizations that need certainty.</p>
+    </div>
+    <div class="mkt-footer-col">
+      <h4>Product</h4>
+      <a href="index.html">Home</a>
+      <a href="index.html#features">Features</a>
+      <a href="index.html#how">Solutions</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="login.html">Login</a>
+    </div>
+    <div class="mkt-footer-col">
+      <h4>Company</h4>
+      <a href="index.html#about">About</a>
+      <a href="#">Contact</a>
+      <a href="#">Careers</a>
+    </div>
+    <div class="mkt-footer-col">
+      <h4>Legal</h4>
+      <a href="#">Privacy Policy</a>
+      <a href="#">Terms of Service</a>
+    </div>
+  </div>
+  <div class="mkt-footer-bottom">© 2026 Presenza. All rights reserved.</div>
+</footer>
+
+<script src="../js/icons.js"></script>
+<script src="../js/marketing.js"></script>
+<script src="../js/pricing.js"></script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Presenza - Leave Requests</title>
+<link rel="icon" type="image/svg+xml" href="../images/presenza-logo.svg">
+<link rel="stylesheet" href="../css/theme.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+</head>
+<body data-role="manager" data-page="leave" data-title="Leave Request" data-subtitle="Review and act on leave requests from your team">
+
+<main>
+  <div class="ps-section-head">
+    <div class="ps-section-title" id="leaveCount">0 requests</div>
+    <div style="display:flex; gap:10px; align-items:center;">
+      <button class="ps-btn ps-btn-primary ps-btn-sm" id="bulkApproveBtn" style="display:none;">Approve selected</button>
+      <button class="ps-btn ps-btn-danger ps-btn-sm" id="bulkRejectBtn" style="display:none;">Reject selected</button>
+      <select class="leave-filter-select" id="leaveFilter">
+        <option>All</option>
+        <option>Pending</option>
+        <option>Approved</option>
+        <option>Rejected</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="leaveMain" style="display:flex; flex-direction:column; gap:16px;"></div>
+</main>
+
+<style>
+  .leave-filter-select {
+    padding: 9px 14px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--surface-border);
+    background: var(--surface-100);
+    color: var(--text-700);
+    font-weight: 700;
+    font-size: 12.5px;
+    font-family: var(--font-body);
+    cursor: pointer;
+  }
+  .leave-filter-select:focus { outline: none; border-color: var(--brand-400); }
+
+  .leave-card {
+    background: linear-gradient(155deg, var(--brand-500) 0%, var(--brand-700) 100%);
+    border: none; border-radius: var(--radius-lg); padding: 20px 24px;
+    box-shadow: 0 10px 26px rgba(41,24,92,0.28);
+  }
+  .leave-card.rejected { opacity: 0.6; }
+  .leave-top { display:flex; align-items:center; justify-content:space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; }
+  .leave-user { display:flex; align-items:center; gap: 12px; }
+  .leave-avatar { width: 38px; height: 38px; border-radius: 50%; background: rgba(255,255,255,0.16); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; flex-shrink: 0; }
+  .leave-name { font-weight: 700; font-size: 14.5px; color: #fff; }
+  .leave-role { font-size: 12px; color: rgba(255,255,255,0.65); font-weight: 600; }
+  .leave-body { display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; align-items: flex-start; }
+  .leave-detail { font-size: 12.5px; font-weight: 600; color: rgba(255,255,255,0.85); line-height: 1.8; }
+  .leave-detail b { color: #fff; }
+  .leave-actions { display:flex; gap: 10px; align-items:flex-start; }
+  .leave-time { text-align:right; font-size: 11px; color: rgba(255,255,255,0.55); font-weight:600; margin-top: 10px; }
+</style>
+
+<script src="../js/icons.js"></script>
+<script src="../js/data.js"></script>
+<script src="../js/shell.js"></script>
+<script src="../js/manager-leave.js"></script>
+</body>
+</html>

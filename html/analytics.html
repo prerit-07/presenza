@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Presenza - Analytics</title>
+<link rel="icon" type="image/svg+xml" href="../images/presenza-logo.svg">
+<link rel="stylesheet" href="../css/theme.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+</head>
+<body data-role="organization" data-page="analytics" data-title="Analytics" data-subtitle="Attendance trends and insights across your organization">
+
+<main>
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 20px;">
+    <div class="ps-card">
+      <div class="ps-section-head"><div class="ps-section-title">Weekly attendance trend</div></div>
+      <canvas id="trendChart" height="140"></canvas>
+    </div>
+    <div class="ps-card">
+      <div class="ps-section-head"><div class="ps-section-title">Status breakdown</div></div>
+      <canvas id="statusChart" height="140"></canvas>
+    </div>
+  </div>
+
+  <div class="ps-card" style="margin-bottom:20px;">
+    <div class="ps-section-head"><div class="ps-section-title">Late arrivals by day</div></div>
+    <canvas id="lateChart" height="90"></canvas>
+  </div>
+
+  <div class="ps-card">
+    <div class="ps-section-head">
+      <div class="ps-section-title">Needs attention</div>
+    </div>
+    <div id="alertsList"></div>
+  </div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="../js/icons.js"></script>
+<script src="../js/data.js"></script>
+<script src="../js/shell.js"></script>
+<script src="../js/analytics.js"></script>
+</body>
+</html>

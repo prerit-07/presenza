@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Presenza - Shifts & Timetable</title>
+<link rel="icon" type="image/svg+xml" href="../images/presenza-logo.svg">
+<link rel="stylesheet" href="../css/theme.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+</head>
+<body data-role="manager" data-roles="organization,manager" data-page="shifts" data-title="Shifts & Timetable" data-subtitle="Configured working sessions and grace periods">
+
+<main>
+  <div class="ps-section-head">
+    <div class="ps-section-title">Shifts</div>
+    <button class="ps-btn ps-btn-primary" id="addShiftBtn">Add shift</button>
+  </div>
+
+  <div id="shiftsGrid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; margin-bottom: 30px;"></div>
+
+  <div class="ps-section-head">
+    <div class="ps-section-title">Timetable</div>
+  </div>
+  <div class="ps-table-wrap">
+    <table class="ps-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Role</th>
+          <th>Assigned Shift</th>
+          <th>Timing</th>
+          <th>Days</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="timetableBody"></tbody>
+    </table>
+  </div>
+</main>
+
+<style>
+  .shift-time { font-family: var(--font-heading); font-size: 19px; font-weight: 800; color: #fff; margin-bottom: 8px; position: relative; }
+  .shift-name { font-size: 13.5px; font-weight: 700; color: #fff; margin-bottom: 4px; position: relative; }
+  .shift-grace { font-size: 11.5px; color: rgba(255,255,255,0.7); font-weight: 600; position: relative; }
+  .shift-assigned { font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 6px; position: relative; }
+  .shift-card-actions { display:flex; gap:8px; margin-top:10px; position:relative; }
+</style>
+
+<script src="../js/icons.js"></script>
+<script src="../js/data.js"></script>
+<script src="../js/shell.js"></script>
+<script src="../js/shifts.js"></script>
+</body>
+</html>

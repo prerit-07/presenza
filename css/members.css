@@ -1,0 +1,201 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+body {
+  background: #e2d9f7;
+}
+
+/* ===== HEADER ===== */
+.members-header {
+  position: relative;
+  background: #2e1a5e;
+  padding: 22px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  min-height: 90px;
+}
+
+.members-header-shapes {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.members-header-shapes .shape {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.m1 { width: 60px; height: 60px; top: -20px; left: 150px; }
+.m2 { width: 40px; height: 40px; top: 30px; left: 260px; transform: rotate(20deg); }
+.m3 { width: 90px; height: 90px; top: -30px; left: 400px; }
+.m4 { width: 60px; height: 60px; top: 20px; left: 560px; transform: rotate(15deg); }
+.m5 { width: 30px; height: 30px; top: 55px; left: 650px; }
+.m6 { width: 70px; height: 70px; top: -30px; right: 40px; transform: rotate(15deg); }
+.m7 { width: 45px; height: 45px; top: 10px; right: 30px; }
+
+.members-logo {
+  position: absolute;
+  left: 40px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
+}
+
+.members-logo .logo-icon {
+  position: relative;
+  width: 55px;
+  height: 65px;
+}
+
+.members-logo .pin-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.members-logo .face {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 20px;
+}
+
+.members-logo .eye {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  background: #2e1a5e;
+  border-radius: 50%;
+  top: 3px;
+}
+
+.members-logo .eye.left { left: 4px; }
+.members-logo .eye.right { right: 4px; }
+
+.members-logo .mouth {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12px;
+  height: 6px;
+  border-bottom: 2px solid #2e1a5e;
+  border-radius: 0 0 10px 10px;
+}
+
+.members-title {
+  position: relative;
+  z-index: 1;
+  color: #fff;
+  font-size: 34px;
+  font-weight: 800;
+}
+
+/* ===== TABS ===== */
+.members-tabs {
+  background: #b199de;
+  display: flex;
+  padding: 0 20px;
+  overflow-x: auto;
+}
+
+.members-tabs a {
+  color: #2e1a5e;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 15px;
+  padding: 16px 20px;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.members-tabs a.active {
+  background: #e2d9f7;
+}
+
+.members-tabs a:hover:not(.active) {
+  background: rgba(255,255,255,0.15);
+}
+
+/* ===== MAIN ===== */
+.members-main {
+  max-width: 950px;
+  margin: 0 auto;
+  padding: 40px 30px 60px;
+}
+
+.members-card {
+  background: #a685d4;
+  border-radius: 22px;
+  padding: 20px 30px;
+  overflow-x: auto;
+}
+
+.members-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: #fff;
+}
+
+.members-table th {
+  text-align: left;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 14px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.25);
+}
+
+.members-table td {
+  padding: 16px 10px;
+  font-size: 14.5px;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+}
+
+.members-table tr:last-child td {
+  border-bottom: none;
+}
+
+.active-status {
+  color: #d4f5d0;
+}
+
+.inactive-status {
+  color: #f5d0d0;
+}
+
+.add-member-wrap {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 25px;
+}
+
+.btn-add-member {
+  background: #6f4bb0;
+  color: #fff;
+  border: none;
+  padding: 12px 26px;
+  border-radius: 25px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 800px) {
+  .members-title {
+    font-size: 24px;
+  }
+  .members-table th, .members-table td {
+    font-size: 12px;
+    padding: 10px 6px;
+  }
+}

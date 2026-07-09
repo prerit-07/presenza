@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Presenza - Join Codes</title>
+<link rel="icon" type="image/svg+xml" href="../images/presenza-logo.svg">
+<link rel="stylesheet" href="../css/theme.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+</head>
+<body data-role="organization" data-page="codes" data-title="Join Codes" data-subtitle="Share these codes to onboard admins and members instantly">
+
+<main>
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 26px;">
+    <div class="ps-card ps-card-accent" style="text-align:center;">
+      <div class="code-role-icon" id="mgrIcon"></div>
+      <h3 class="code-role-name">Manager</h3>
+      <div class="code-value" id="managerCode">PRZ-ADM-R6MV</div>
+      <div class="code-btn-row">
+        <button class="ps-btn code-copy-btn" data-copy-target="managerCode">Copy code</button>
+        <button class="ps-btn code-regen-btn" data-regen-role="manager">Regenerate</button>
+      </div>
+    </div>
+    <div class="ps-card ps-card-accent" style="text-align:center;">
+      <div class="code-role-icon" id="empIcon"></div>
+      <h3 class="code-role-name">Employee</h3>
+      <div class="code-value" id="employeeCode">PRZ-MEM-4T2W</div>
+      <div class="code-btn-row">
+        <button class="ps-btn code-copy-btn" data-copy-target="employeeCode">Copy code</button>
+        <button class="ps-btn code-regen-btn" data-regen-role="employee">Regenerate</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="ps-card">
+    <div class="ps-section-head">
+      <div class="ps-section-title">Code Settings</div>
+    </div>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px 30px;">
+      <div class="ps-field">
+        <label>Code Expiry</label>
+        <select id="codeExpiry">
+          <option>Never</option>
+          <option>7 days</option>
+          <option>30 days</option>
+          <option>90 days</option>
+        </select>
+      </div>
+      <div class="ps-field">
+        <label>Max Uses</label>
+        <select id="codeMaxUses">
+          <option>Unlimited</option>
+          <option>10</option>
+          <option>50</option>
+          <option>100</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</main>
+
+<style>
+  .code-role-icon {
+    width: 48px; height: 48px; border-radius: 14px;
+    background: rgba(255,255,255,0.16); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 14px;
+  }
+  .code-role-name { font-family: var(--font-heading); font-size: 16px; font-weight: 700; margin-bottom: 16px; color: #fff; }
+  .code-value {
+    font-family: var(--font-heading); font-size: 21px; font-weight: 800;
+    letter-spacing: 0.5px; color: #fff; margin-bottom: 18px;
+  }
+  .code-btn-row { display: flex; gap: 10px; justify-content: center; }
+  .code-regen-btn, .code-copy-btn {
+    background: rgba(255,255,255,0.14); color: #fff;
+  }
+  .code-regen-btn:hover, .code-copy-btn:hover { background: rgba(255,255,255,0.22); }
+</style>
+
+<script src="../js/icons.js"></script>
+<script src="../js/data.js"></script>
+<script src="../js/shell.js"></script>
+<script src="../js/codes.js"></script>
+</body>
+</html>

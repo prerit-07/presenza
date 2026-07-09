@@ -1,0 +1,81 @@
+.att-main {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 35px 30px 60px;
+}
+
+.att-card {
+  background: #a685d4;
+  border-radius: 22px;
+  padding: 25px 30px;
+  overflow-x: auto;
+}
+
+.att-toolbar {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+}
+
+.toolbar-item {
+  background: #9c7fd1;
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 10px 18px;
+  border-radius: 20px;
+}
+
+.toolbar-select {
+  background: #9c7fd1;
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 10px 18px;
+  border-radius: 20px;
+  border: none;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.toolbar-export {
+  background: #6f4bb0;
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 10px 18px;
+  border-radius: 20px;
+  border: none;
+  cursor: pointer;
+}
+
+.att-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: #fff;
+}
+
+.att-table th {
+  text-align: left;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 12px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.25);
+}
+
+.att-table td {
+  padding: 16px 10px;
+  font-size: 14.5px;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+}
+
+.att-table tr:last-child td {
+  border-bottom: none;
+}
+
+.icon-edit {
+  cursor: pointer;
+}
