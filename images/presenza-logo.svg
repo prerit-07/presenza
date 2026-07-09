@@ -1,0 +1,29 @@
+<svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="pinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8b5cf6"/>
+      <stop offset="55%" stop-color="#6d3fd6"/>
+      <stop offset="100%" stop-color="#3a1f8c"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.38"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="softShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3.5" flood-color="#1c0f3d" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <path d="M50 4 C24 4 4 24 4 50 C4 84 50 118 50 118 C50 118 96 84 96 50 C96 24 76 4 50 4 Z" fill="url(#pinGrad)" filter="url(#softShadow)"/>
+  <path d="M50 4 C24 4 4 24 4 50 C4 60 10 70 18 79 C10 66 8 56 12 46 C18 28 34 14 54 10 C66 8 78 12 86 20 C78 10 65 4 50 4 Z" fill="url(#shine)"/>
+
+  <circle cx="50" cy="46" r="24" fill="#f4f1ff"/>
+  <circle cx="32" cy="48" r="3.2" fill="#f0a3c4" opacity="0.55"/>
+  <circle cx="68" cy="48" r="3.2" fill="#f0a3c4" opacity="0.55"/>
+  <circle cx="41" cy="42" r="3.4" fill="#1c0f3d"/>
+  <circle cx="59" cy="42" r="3.4" fill="#1c0f3d"/>
+  <path d="M40 54 Q50 62.5 60 54" stroke="#1c0f3d" stroke-width="3" fill="none" stroke-linecap="round"/>
+
+  <circle cx="73" cy="29" r="4.6" fill="#22d3c9"/>
+  <circle cx="80" cy="20" r="2.2" fill="#22d3c9" opacity="0.7"/>
+</svg>
