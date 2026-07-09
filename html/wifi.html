@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Presenza - Wifi / BSSID Management</title>
+<link rel="icon" type="image/svg+xml" href="../images/presenza-logo.svg">
+<link rel="stylesheet" href="../css/theme.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+</head>
+<body data-role="organization" data-page="wifi" data-title="Wifi / BSSID Management" data-subtitle="Registered access points used for dual-layer verification">
+
+<main>
+  <div class="ps-table-wrap" style="margin-bottom: 20px;">
+    <table class="ps-table">
+      <thead>
+        <tr>
+          <th>Zone</th>
+          <th>SSID</th>
+          <th>BSSID</th>
+          <th>Registered By</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="wifiTableBody"></tbody>
+    </table>
+  </div>
+
+  <div style="display:flex; justify-content:flex-end;">
+    <button class="ps-btn ps-btn-primary" id="addRouterBtn">Add router</button>
+  </div>
+</main>
+
+<script src="../js/icons.js"></script>
+<script src="../js/data.js"></script>
+<script src="../js/shell.js"></script>
+<script src="../js/wifi.js"></script>
+</body>
+</html>

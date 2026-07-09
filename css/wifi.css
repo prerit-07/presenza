@@ -1,0 +1,204 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+body {
+  background: #e2d9f7;
+}
+
+/* ===== HEADER ===== */
+.wifi-header {
+  position: relative;
+  background: #2e1a5e;
+  padding: 22px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  min-height: 90px;
+}
+
+.wifi-header-shapes {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.wifi-header-shapes .shape {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.w1 { width: 60px; height: 60px; top: -20px; left: 120px; }
+.w2 { width: 40px; height: 40px; top: 30px; left: 230px; transform: rotate(20deg); }
+.w3 { width: 90px; height: 90px; top: -30px; left: 400px; }
+.w4 { width: 60px; height: 60px; top: 20px; left: 570px; transform: rotate(15deg); }
+.w5 { width: 30px; height: 30px; top: 55px; left: 660px; }
+.w6 { width: 70px; height: 70px; top: -30px; right: 40px; transform: rotate(15deg); }
+.w7 { width: 45px; height: 45px; top: 10px; right: 30px; }
+
+.wifi-logo {
+  position: absolute;
+  left: 40px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
+}
+
+.wifi-logo .logo-icon {
+  position: relative;
+  width: 55px;
+  height: 65px;
+}
+
+.wifi-logo .pin-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.wifi-logo .face {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 20px;
+}
+
+.wifi-logo .eye {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  background: #2e1a5e;
+  border-radius: 50%;
+  top: 3px;
+}
+
+.wifi-logo .eye.left { left: 4px; }
+.wifi-logo .eye.right { right: 4px; }
+
+.wifi-logo .mouth {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12px;
+  height: 6px;
+  border-bottom: 2px solid #2e1a5e;
+  border-radius: 0 0 10px 10px;
+}
+
+.wifi-title {
+  position: relative;
+  z-index: 1;
+  color: #fff;
+  font-size: 32px;
+  font-weight: 800;
+}
+
+/* ===== TABS ===== */
+.wifi-tabs {
+  background: #b199de;
+  display: flex;
+  padding: 0 20px;
+  overflow-x: auto;
+}
+
+.wifi-tabs a {
+  color: #2e1a5e;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 15px;
+  padding: 16px 20px;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.wifi-tabs a.active {
+  background: #e2d9f7;
+}
+
+.wifi-tabs a:hover:not(.active) {
+  background: rgba(255,255,255,0.15);
+}
+
+/* ===== MAIN ===== */
+.wifi-main {
+  max-width: 950px;
+  margin: 0 auto;
+  padding: 40px 30px 60px;
+}
+
+.wifi-card {
+  background: #a685d4;
+  border-radius: 22px;
+  padding: 20px 30px;
+  overflow-x: auto;
+}
+
+.wifi-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: #fff;
+}
+
+.wifi-table th {
+  text-align: left;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 14px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.25);
+}
+
+.wifi-table td {
+  padding: 16px 10px;
+  font-size: 14.5px;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+}
+
+.wifi-table tr:last-child td {
+  border-bottom: none;
+}
+
+.actions {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.icon-edit, .icon-delete {
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.add-router-wrap {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 25px;
+}
+
+.btn-add-router {
+  background: #6f4bb0;
+  color: #fff;
+  border: none;
+  padding: 12px 26px;
+  border-radius: 25px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 800px) {
+  .wifi-title {
+    font-size: 22px;
+  }
+  .wifi-table th, .wifi-table td {
+    font-size: 12px;
+    padding: 10px 6px;
+  }
+}
