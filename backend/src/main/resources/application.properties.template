@@ -1,5 +1,7 @@
 # ============================================================
 # Presenza backend - default profile (PostgreSQL)
+# USAGE: Copy this file to application.properties and fill in your values.
+#        Never commit application.properties — it's in .gitignore.
 # ============================================================
 spring.application.name=presenza-backend
 # Render injects PORT at runtime; falls back to 8080 for local dev.
@@ -7,10 +9,10 @@ server.port=${PORT:8080}
 
 # --- PostgreSQL ---
 # Create the database first: CREATE DATABASE presenza;
-# Override any of these with env vars (DB_URL / DB_USERNAME / DB_PASSWORD) instead of editing this file.
+# Set env vars DB_URL / DB_USERNAME / DB_PASSWORD at runtime, or replace the defaults below.
 spring.datasource.url=${DB_URL:jdbc:postgresql://localhost:5432/presenza}
 spring.datasource.username=${DB_USERNAME:postgres}
-spring.datasource.password=${DB_PASSWORD:234@#%012prerit0712}
+spring.datasource.password=${DB_PASSWORD:YOUR_DB_PASSWORD_HERE}
 spring.datasource.driver-class-name=org.postgresql.Driver
 
 spring.jpa.hibernate.ddl-auto=update
@@ -25,8 +27,8 @@ spring.jpa.open-in-view=false
 spring.jpa.properties.hibernate.jdbc.time_zone=UTC
 
 # --- JWT ---
-# Change this secret before deploying anywhere real. Must be >= 32 bytes for HS256.
-presenza.jwt.secret=${JWT_SECRET:presenza-dev-secret-key-change-me-before-production-32bytes}
+# Must be >= 32 bytes for HS256. Set JWT_SECRET env var in production.
+presenza.jwt.secret=${JWT_SECRET:YOUR_JWT_SECRET_HERE_MIN_32_BYTES}
 presenza.jwt.expiration-ms=86400000
 
 # --- CORS ---

@@ -11,3 +11,10 @@ backend/target/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Sensitive config — use application.properties.template instead
+backend/src/main/resources/application.properties
+
+# Temp / lock files
+~$*
+*.docx
