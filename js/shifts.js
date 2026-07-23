@@ -1,113 +1,128 @@
 document.addEventListener('DOMContentLoaded', async () => {
   const grid = document.getElementById('shiftsGrid');
   const timetableBody = document.getElementById('timetableBody');
+  const banner = document.getElementById('appConnBanner');
+  const addBtn = document.getElementById('addShiftBtn');
 
   let shifts = [];
-  let timetable = [];
+  let geofences = [];
 
   function fmt(t) {
-    if (!t) return '';
+    if (!t) return '—';
     const [h, m] = t.split(':');
     const hour = ((+h + 11) % 12) + 1;
     return `${hour}:${m} ${+h < 12 ? 'AM' : 'PM'}`;
   }
 
-  async function renderShifts() {
-    shifts = await Store.listShifts();
-    grid.innerHTML = shifts.map(s => `
-      <div class="ps-stat-card" style="text-align:center;">
+  function geofenceOptions() {
+    return geofences.map(g => ({ value: String(g.geofenceId), label: g.buildingName || ('Geofence #' + g.geofenceId) }));
+  }
+
+  try {
+    await appEnsureToken();
+    const me = await AppStore.getMe();
+    banner.innerHTML = `<span class="ps-chip ps-chip-success">Connected</span> Live data from the app, logged in as <b>${escapeAppHtml(me.username)}</b> (${escapeAppHtml(me.role)})`;
+  } catch (err) {
+    banner.innerHTML = `<span class="ps-chip ps-chip-danger">Not connected</span> ${escapeAppHtml(err.message)}`;
+    grid.innerHTML = `<div class="ps-empty">Couldn't connect to the app.</div>`;
+    timetableBody.innerHTML = `<tr><td colspan="3" class="ps-empty">Couldn't connect to the app.</td></tr>`;
+    return;
+  }
+
+  try { geofences = await AppStore.getGeofences(); } catch { /* non-fatal */ }
+
+  async function loadShifts() {
+    try {
+      shifts = await AppStore.getShifts();
+    } catch (err) {
+      grid.innerHTML = `<div class="ps-empty">Couldn't load shifts (${escapeAppHtml(err.message)}).</div>`;
+      return;
+    }
+
+    const shiftById = {};
+    shifts.forEach(s => { shiftById[s.shiftId] = s; });
+
+    grid.innerHTML = shifts.length ? shifts.map(s => `
+      <div class="ps-stat-card" style="text-align:center;" data-shift-id="${s.shiftId}">
         <div class="shift-time">${fmt(s.startTime)} – ${fmt(s.endTime)}</div>
-        <div class="shift-name">${s.name}</div>
-        <div class="shift-grace">Grace period: ${s.graceMinutes} min</div>
-        <div class="shift-assigned">${s.assignedCount} member${s.assignedCount === 1 ? '' : 's'} assigned</div>
+        <div class="shift-name">${escapeAppHtml(s.shiftName)}</div>
+        <div class="shift-grace">Late allowance: ${s.allowedLateMinutes ?? '—'} min</div>
+        <div class="shift-assigned">Geofence: ${s.geofenceId ?? 'None'}</div>
         <div class="shift-card-actions">
-          <button class="ps-btn ps-btn-ghost ps-btn-sm" data-edit="${s.id}">Edit</button>
-          <button class="ps-btn ps-btn-ghost ps-btn-sm" data-delete="${s.id}">Delete</button>
+          <button class="ps-btn ps-btn-ghost ps-btn-sm btn-edit-shift" style="width:100%; justify-content:center;">Edit</button>
         </div>
       </div>
-    `).join('') || `<div class="ps-empty">No shifts configured yet.</div>`;
+    `).join('') : `<div class="ps-empty">No shifts configured yet.</div>`;
 
-    grid.querySelectorAll('[data-delete]').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        if (!confirm('Delete this shift? Members on it will be unassigned.')) return;
-        await Store.deleteShift(btn.dataset.delete);
-        renderShifts();
-        renderTimetable();
-      });
-    });
-
-    grid.querySelectorAll('[data-edit]').forEach(btn => {
-      btn.addEventListener('click', () => openShiftModal(shifts.find(s => String(s.id) === btn.dataset.edit)));
-    });
+    try {
+      const employees = await AppStore.getAllEmployees();
+      timetableBody.innerHTML = employees.length ? employees.map(e => {
+        const shift = shiftById[e.shiftId];
+        return `<tr>
+          <td>${escapeAppHtml(e.employeeName)}</td>
+          <td>${shift ? escapeAppHtml(shift.shiftName) : '—'}</td>
+          <td>${shift ? `${fmt(shift.startTime)} – ${fmt(shift.endTime)}` : '-'}</td>
+        </tr>`;
+      }).join('') : `<tr><td colspan="3" class="ps-empty">No members yet.</td></tr>`;
+    } catch (err) {
+      if (err.status === 403) {
+        timetableBody.innerHTML = `<tr><td colspan="3" class="ps-empty">Needs a manager/org-admin account on their side to view this.</td></tr>`;
+      } else {
+        timetableBody.innerHTML = `<tr><td colspan="3" class="ps-empty">Couldn't load the timetable (${escapeAppHtml(err.message)}).</td></tr>`;
+      }
+    }
   }
 
-  async function renderTimetable() {
-    timetable = await Store.getTimetable();
-    timetableBody.innerHTML = timetable.map(t => `
-      <tr>
-        <td>${t.name}</td>
-        <td>${t.title}</td>
-        <td>${t.shiftName}</td>
-        <td>${t.startTime ? fmt(t.startTime) + ' – ' + fmt(t.endTime) : '-'}</td>
-        <td>${t.days || '-'}</td>
-        <td><button class="ps-btn ps-btn-ghost ps-btn-sm" data-assign="${t.userId}">Assign</button></td>
-      </tr>
-    `).join('') || `<tr><td colspan="6" class="ps-empty">No members yet.</td></tr>`;
+  await loadShifts();
 
-    timetableBody.querySelectorAll('[data-assign]').forEach(btn => {
-      btn.addEventListener('click', () => openAssignModal(btn.dataset.assign));
-    });
-  }
-
-  function openShiftModal(existing) {
+  addBtn?.addEventListener('click', () => {
     PSModal.open({
-      title: existing ? 'Edit shift' : 'Add shift',
-      subtitle: 'Working hours and grace period before a check-in counts as late.',
-      submitLabel: existing ? 'Save changes' : 'Add shift',
+      title: 'Add shift',
+      submitLabel: 'Add shift',
       fields: [
-        { name: 'name', label: 'Shift name', placeholder: 'e.g. Morning Shift', value: existing?.name },
-        { name: 'startTime', label: 'Start time', type: 'time', value: existing?.startTime },
-        { name: 'endTime', label: 'End time', type: 'time', value: existing?.endTime },
-        { name: 'days', label: 'Days (comma-separated)', placeholder: 'MON,TUE,WED,THU,FRI', required: false, value: existing?.days },
-        { name: 'graceMinutes', label: 'Grace period (minutes)', type: 'number', placeholder: '15', required: false, value: existing?.graceMinutes }
+        { name: 'shiftName', label: 'Shift name', placeholder: 'e.g. General' },
+        { name: 'startTime', label: 'Start time', type: 'time' },
+        { name: 'endTime', label: 'End time', type: 'time' },
+        { name: 'allowedLateMinutes', label: 'Allowed late minutes', type: 'number', value: '0' },
+        { name: 'geofenceId', label: 'Geofence', type: 'select', options: geofenceOptions(), required: false },
       ],
       onSubmit: async (values) => {
-        const payload = {
-          name: values.name,
-          startTime: values.startTime,
-          endTime: values.endTime,
-          days: values.days || undefined,
-          graceMinutes: values.graceMinutes ? Number(values.graceMinutes) : undefined
-        };
-        if (existing) await Store.updateShift(existing.id, payload);
-        else await Store.addShift(payload);
-        renderShifts();
-        renderTimetable();
-      }
+        await AppStore.createShift(
+          values.shiftName, values.startTime, values.endTime,
+          Number(values.allowedLateMinutes || 0),
+          values.geofenceId ? Number(values.geofenceId) : null
+        );
+        await loadShifts();
+      },
     });
-  }
+  });
 
-  function openAssignModal(userId) {
+  grid.addEventListener('click', (e) => {
+    const btn = e.target.closest('.btn-edit-shift');
+    if (!btn) return;
+    const card = btn.closest('[data-shift-id]');
+    const shiftId = Number(card.dataset.shiftId);
+    const s = shifts.find(x => x.shiftId === shiftId);
+    if (!s) return;
+
     PSModal.open({
-      title: 'Assign shift',
-      subtitle: 'Pick a shift for this member, or Unassigned to clear it.',
-      submitLabel: 'Assign',
+      title: 'Edit shift',
+      submitLabel: 'Save changes',
       fields: [
-        { name: 'shiftId', label: 'Shift', type: 'select', options: [
-            { value: '', label: 'Unassigned' },
-            ...shifts.map(s => ({ value: String(s.id), label: `${s.name} (${fmt(s.startTime)} – ${fmt(s.endTime)})` }))
-          ], required: false }
+        { name: 'shiftName', label: 'Shift name', value: s.shiftName },
+        { name: 'startTime', label: 'Start time', type: 'time', value: s.startTime },
+        { name: 'endTime', label: 'End time', type: 'time', value: s.endTime },
+        { name: 'allowedLateMinutes', label: 'Allowed late minutes', type: 'number', value: String(s.allowedLateMinutes ?? 0) },
+        { name: 'geofenceId', label: 'Geofence', type: 'select', options: geofenceOptions(), required: false, value: s.geofenceId != null ? String(s.geofenceId) : '' },
       ],
       onSubmit: async (values) => {
-        await Store.assignShift(userId, values.shiftId ? Number(values.shiftId) : null);
-        renderShifts();
-        renderTimetable();
-      }
+        await AppStore.updateShift(
+          shiftId, values.shiftName, values.startTime, values.endTime,
+          Number(values.allowedLateMinutes || 0),
+          values.geofenceId ? Number(values.geofenceId) : null
+        );
+        await loadShifts();
+      },
     });
-  }
-
-  document.getElementById('addShiftBtn')?.addEventListener('click', () => openShiftModal(null));
-
-  await renderShifts();
-  await renderTimetable();
+  });
 });

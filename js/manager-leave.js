@@ -1,14 +1,16 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   const main = document.getElementById('leaveMain');
   const countEl = document.getElementById('leaveCount');
-  const filterSelect = document.getElementById('leaveFilter');
-  const bulkApproveBtn = document.getElementById('bulkApproveBtn');
-  const bulkRejectBtn = document.getElementById('bulkRejectBtn');
+  const banner = document.getElementById('appConnBanner');
 
-  function chipClass(status) {
-    if (status === 'Pending') return 'ps-chip-warn';
-    if (status === 'Approved') return 'ps-chip-success';
-    return 'ps-chip-danger';
+  try {
+    await appEnsureToken();
+    const me = await AppStore.getMe();
+    banner.innerHTML = '<span class="ps-chip ps-chip-success">Connected</span> Live data from the app, logged in as <b>' + escapeAppHtml(me.username) + '</b> (' + escapeAppHtml(me.role) + ')';
+  } catch (err) {
+    banner.innerHTML = '<span class="ps-chip ps-chip-danger">Not connected</span> ' + escapeAppHtml(err.message);
+    main.innerHTML = '<div class="ps-empty">Couldn\'t connect to the app.</div>';
+    return;
   }
 
   function fmt(dateStr) {
@@ -18,91 +20,83 @@ document.addEventListener('DOMContentLoaded', () => {
     return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
   }
 
-  function selectedIds() {
-    return [...main.querySelectorAll('.leave-select:checked')].map(cb => Number(cb.dataset.id));
+  function dateRange(r) {
+    if (r.startDate && r.endDate && r.startDate !== r.endDate) return fmt(r.startDate) + ' – ' + fmt(r.endDate);
+    return fmt(r.startDate || r.endDate);
   }
 
-  function updateBulkButtons() {
-    const any = selectedIds().length > 0;
-    bulkApproveBtn.style.display = any ? '' : 'none';
-    bulkRejectBtn.style.display = any ? '' : 'none';
-  }
+  async function load() {
+    let requests = [];
+    try {
+      requests = (await AppStore.getPendingAttendanceRequests()) || [];
+    } catch (err) {
+      main.innerHTML = err.status === 403
+        ? '<div class="ps-empty">Needs an org-admin account on their side to review requests.</div>'
+        : '<div class="ps-empty">Couldn\'t load attendance requests (' + escapeAppHtml(err.message) + ').</div>';
+      countEl.textContent = 'Pending requests';
+      return;
+    }
 
-  async function render() {
-    const data = await Store.get();
-    const filter = filterSelect.value;
-    const requests = data.leaveRequests || [];
-    const visible = filter === 'All' ? requests : requests.filter(r => r.status === filter);
+    countEl.textContent = requests.length + ' pending request' + (requests.length === 1 ? '' : 's');
+    if (!requests.length) {
+      main.innerHTML = '<div class="ps-empty">No pending attendance requests.</div>';
+      return;
+    }
 
-    countEl.textContent = `${visible.length} request${visible.length === 1 ? '' : 's'}`;
-
-    main.innerHTML = visible.map((r) => {
-      const idx = requests.indexOf(r);
+    main.innerHTML = requests.map((r) => {
+      const name = r.employeeName || ('Employee #' + r.employeeId);
       return `
-      <div class="leave-card ${r.status === 'Rejected' ? 'rejected' : ''}" data-index="${idx}">
-        <div class="leave-top">
-          <div class="leave-user">
-            ${r.status === 'Pending' ? `<input type="checkbox" class="leave-select" data-id="${r.id}" style="width:16px; height:16px;">` : ''}
-            <div class="leave-avatar">${r.name.slice(0, 2).toUpperCase()}</div>
-            <div>
-              <div class="leave-name">${r.name}</div>
-              <div class="leave-role">${r.role}</div>
+        <div class="leave-card" data-request-id="${r.requestId}">
+          <div class="leave-top">
+            <div class="leave-user">
+              <div class="leave-avatar">${escapeAppHtml(String(name).slice(0, 2).toUpperCase())}</div>
+              <div>
+                <div class="leave-name">${escapeAppHtml(name)}</div>
+                <div class="leave-role">${escapeAppHtml(r.requestType || 'Attendance')} request</div>
+              </div>
+            </div>
+            <span class="ps-chip ps-chip-warn">${escapeAppHtml(r.status || 'Pending')}</span>
+          </div>
+          <div class="leave-body">
+            <div class="leave-detail">
+              <div><b>Dates:</b> ${escapeAppHtml(dateRange(r))}</div>
+              <div><b>Reason:</b> ${escapeAppHtml(r.reason || '-')}</div>
+            </div>
+            <div class="leave-actions">
+              <button class="ps-btn ps-btn-primary btn-approve">Approve</button>
+              <button class="ps-btn ps-btn-danger btn-reject">Reject</button>
             </div>
           </div>
-          <span class="ps-chip ${chipClass(r.status)}">${r.status}</span>
-        </div>
-        <div class="leave-body">
-          <div class="leave-detail">
-            <div><b>From:</b> ${fmt(r.from)}</div>
-            <div><b>To:</b> ${fmt(r.to)}</div>
-            <div><b>Reason:</b> ${r.reason}</div>
-          </div>
-          ${r.status === 'Pending' ? `
-          <div class="leave-actions">
-            <button class="ps-btn ps-btn-primary btn-approve">Approve</button>
-            <button class="ps-btn ps-btn-danger btn-reject">Reject</button>
-          </div>` : ''}
-        </div>
-        <div class="leave-time">${r.appliedOn}</div>
-      </div>
-    `;
-    }).join('') || '<div class="ps-empty">No leave requests match this filter.</div>';
-
-    updateBulkButtons();
-    main.querySelectorAll('.leave-select').forEach(cb => cb.addEventListener('change', updateBulkButtons));
+          <div class="leave-time">${r.createdAt ? escapeAppHtml(new Date(r.createdAt).toLocaleString()) : ''}</div>
+        </div>`;
+    }).join('');
   }
 
-  render();
-  filterSelect.addEventListener('change', render);
+  await load();
 
-  main.addEventListener('click', async (e) => {
+  main.addEventListener('click', (e) => {
     const card = e.target.closest('.leave-card');
     if (!card) return;
-    const idx = Number(card.dataset.index);
+    const requestId = Number(card.dataset.requestId);
+    const approved = !!e.target.closest('.btn-approve');
+    const rejected = !!e.target.closest('.btn-reject');
+    if (!approved && !rejected) return;
 
-    if (e.target.closest('.btn-approve')) {
-      const req = (await Store.get()).leaveRequests[idx];
-      await Store.updateLeaveStatus(req.id, 'APPROVED');
-      render();
-    }
-    if (e.target.closest('.btn-reject')) {
-      const req = (await Store.get()).leaveRequests[idx];
-      await Store.updateLeaveStatus(req.id, 'REJECTED');
-      render();
-    }
-  });
-
-  bulkApproveBtn.addEventListener('click', async () => {
-    const ids = selectedIds();
-    if (!ids.length) return;
-    await Store.bulkUpdateLeaveStatus(ids, 'APPROVED');
-    render();
-  });
-
-  bulkRejectBtn.addEventListener('click', async () => {
-    const ids = selectedIds();
-    if (!ids.length) return;
-    await Store.bulkUpdateLeaveStatus(ids, 'REJECTED');
-    render();
+    PSModal.open({
+      title: approved ? 'Approve attendance request' : 'Reject attendance request',
+      subtitle: 'Their system requires a short remark with every review.',
+      submitLabel: approved ? 'Approve' : 'Reject',
+      fields: [
+        { name: 'remarks', label: 'Remarks', placeholder: approved ? 'e.g. Approved, enjoy your leave.' : 'e.g. Insufficient leave balance.' },
+      ],
+      onSubmit: async (values) => {
+        try {
+          await AppStore.reviewAttendanceRequest(requestId, approved, values.remarks);
+          await load();
+        } catch (err) {
+          alert('Could not submit review: ' + err.message);
+        }
+      },
+    });
   });
 });

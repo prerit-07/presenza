@@ -1,67 +1,95 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   const tbody = document.getElementById('wifiTableBody');
+  const banner = document.getElementById('appConnBanner');
+  const addBtn = document.getElementById('addRouterBtn');
 
-  async function renderRouters() {
-    const data = await Store.get();
-    tbody.innerHTML = data.routers.map((r, idx) => `
-      <tr data-index="${idx}">
-        <td>${r.zone}</td>
-        <td>${r.ssid}</td>
-        <td>${r.bssid}</td>
-        <td>${r.registeredBy}</td>
-        <td><span class="ps-chip ps-chip-success">${r.status}</span></td>
-        <td>
-          <span class="ps-icon-action icon-edit">${psIcon('edit', 14)}</span>
-          <span class="ps-icon-action icon-delete">${psIcon('trash', 14)}</span>
-        </td>
-      </tr>
-    `).join('') || `<tr><td colspan="6" class="ps-empty">No routers registered yet.</td></tr>`;
+  let geofences = [];
+  let networks = []; // flattened, each tagged with geofenceId + buildingName
+
+  try {
+    await appEnsureToken();
+    const me = await AppStore.getMe();
+    banner.innerHTML = `<span class="ps-chip ps-chip-success">Connected</span> Live data from the app, logged in as <b>${escapeAppHtml(me.username)}</b> (${escapeAppHtml(me.role)})`;
+  } catch (err) {
+    banner.innerHTML = `<span class="ps-chip ps-chip-danger">Not connected</span> ${escapeAppHtml(err.message)}`;
+    tbody.innerHTML = `<tr><td colspan="5" class="ps-empty">Couldn't connect to the app.</td></tr>`;
+    return;
   }
 
-  renderRouters();
+  function geofenceOptions() {
+    return geofences.map(g => ({ value: String(g.geofenceId), label: g.buildingName || ('Zone #' + g.geofenceId) }));
+  }
 
-  tbody.addEventListener('click', async (e) => {
-    const row = e.target.closest('tr');
-    if (!row) return;
-    const idx = Number(row.dataset.index);
-
-    if (e.target.closest('.icon-delete')) {
-      const data = await Store.get();
-      await Store.deleteRouter(data.routers[idx].id);
-      renderRouters();
+  async function loadNetworks() {
+    try { geofences = await AppStore.getGeofences(); } catch (err) {
+      tbody.innerHTML = `<tr><td colspan="5" class="ps-empty">Couldn't load zones (${escapeAppHtml(err.message)}).</td></tr>`;
+      return;
     }
-    if (e.target.closest('.icon-edit')) {
-      const data = await Store.get();
-      const router = data.routers[idx];
-      PSModal.open({
-        title: 'Edit router',
-        subtitle: `Update the SSID registered for "${router.zone}".`,
-        submitLabel: 'Save changes',
-        fields: [
-          { name: 'ssid', label: 'SSID', placeholder: 'e.g. Campus 5G', value: router.ssid }
-        ],
-        onSubmit: async ({ ssid }) => {
-          await Store.updateRouter(router.id, { zone: router.zone, ssid, bssid: router.bssid });
-          renderRouters();
-        }
-      });
-    }
-  });
 
-  document.getElementById('addRouterBtn')?.addEventListener('click', () => {
+    networks = [];
+    for (const g of geofences) {
+      try {
+        const nets = await AppStore.getWifiNetworksForGeofence(g.geofenceId);
+        nets.forEach(n => networks.push(Object.assign({}, n, { buildingName: g.buildingName || ('Zone #' + g.geofenceId) })));
+      } catch { /* skip zones we can't read */ }
+    }
+
+    tbody.innerHTML = networks.length ? networks.map(n => `
+      <tr data-wifi-id="${n.wifiId}">
+        <td>${escapeAppHtml(n.buildingName)}</td>
+        <td>${escapeAppHtml(n.ssid)}</td>
+        <td>${escapeAppHtml(n.bssid)}</td>
+        <td>${n.addedAt ? new Date(n.addedAt).toLocaleDateString() : '—'}</td>
+        <td><span class="ps-chip ${n.active === false ? 'ps-chip-danger' : 'ps-chip-success'}">${n.active === false ? 'Inactive' : 'Active'}</span></td>
+        <td><button class="ps-btn ps-btn-ghost ps-btn-sm btn-edit-wifi">Edit</button></td>
+      </tr>
+    `).join('') : `<tr><td colspan="6" class="ps-empty">No routers registered yet.</td></tr>`;
+  }
+
+  await loadNetworks();
+
+  addBtn?.addEventListener('click', () => {
+    if (!geofences.length) {
+      alert('Add a geofence zone first (Geofencing page) before registering a WiFi network.');
+      return;
+    }
     PSModal.open({
       title: 'Add router',
-      subtitle: 'Register a WiFi access point for BSSID verification.',
+      subtitle: 'Register a real WiFi access point on the app for BSSID verification.',
       submitLabel: 'Add router',
       fields: [
-        { name: 'zone', label: 'Zone name', placeholder: 'e.g. Room 101' },
-        { name: 'ssid', label: 'SSID', placeholder: 'e.g. Campus 5G' }
+        { name: 'geofenceId', label: 'Zone', type: 'select', options: geofenceOptions() },
+        { name: 'ssid', label: 'SSID', placeholder: 'e.g. Campus 5G' },
+        { name: 'bssid', label: 'BSSID', placeholder: 'e.g. 00:1A:2B:3C:4D:5E' },
       ],
-      onSubmit: async ({ zone, ssid }) => {
-        const session = (await Store.get()).session;
-        await Store.addRouter({ zone, ssid, bssid: '00:00:00:00:00:00', registeredBy: session?.name || 'Admin', status: 'Active' });
-        renderRouters();
-      }
+      onSubmit: async (values) => {
+        await AppStore.createWifiNetwork(Number(values.geofenceId), values.ssid, values.bssid);
+        await loadNetworks();
+      },
+    });
+  });
+
+  tbody.addEventListener('click', (e) => {
+    const btn = e.target.closest('.btn-edit-wifi');
+    if (!btn) return;
+    const row = btn.closest('tr');
+    const wifiId = Number(row.dataset.wifiId);
+    const n = networks.find(x => x.wifiId === wifiId);
+    if (!n) return;
+
+    PSModal.open({
+      title: 'Edit router',
+      subtitle: `Update the SSID/BSSID registered for "${n.buildingName}".`,
+      submitLabel: 'Save changes',
+      fields: [
+        { name: 'geofenceId', label: 'Zone', type: 'select', options: geofenceOptions(), value: String(n.geofenceId) },
+        { name: 'ssid', label: 'SSID', value: n.ssid },
+        { name: 'bssid', label: 'BSSID', value: n.bssid },
+      ],
+      onSubmit: async (values) => {
+        await AppStore.updateWifiNetwork(wifiId, Number(values.geofenceId), values.ssid, values.bssid);
+        await loadNetworks();
+      },
     });
   });
 });

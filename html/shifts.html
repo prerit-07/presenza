@@ -8,15 +8,17 @@
 <link rel="stylesheet" href="../css/theme.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
 </head>
-<body data-role="manager" data-roles="organization,manager" data-page="shifts" data-title="Shifts & Timetable" data-subtitle="Configured working sessions and grace periods">
+<body data-role="manager" data-roles="organization,manager" data-page="shifts" data-title="Shifts & Timetable" data-subtitle="Live shifts and assignments from the app">
 
 <main>
+  <div id="appConnBanner" class="ps-card" style="margin-bottom:18px; font-size:13.5px; font-weight:600;">Connecting…</div>
+
   <div class="ps-section-head">
     <div class="ps-section-title">Shifts</div>
     <button class="ps-btn ps-btn-primary" id="addShiftBtn">Add shift</button>
   </div>
 
-  <div id="shiftsGrid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; margin-bottom: 30px;"></div>
+  <div id="shiftsGrid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; margin-bottom: 30px;">Loading…</div>
 
   <div class="ps-section-head">
     <div class="ps-section-title">Timetable</div>
@@ -26,14 +28,11 @@
       <thead>
         <tr>
           <th>Name</th>
-          <th>Role</th>
           <th>Assigned Shift</th>
           <th>Timing</th>
-          <th>Days</th>
-          <th></th>
         </tr>
       </thead>
-      <tbody id="timetableBody"></tbody>
+      <tbody id="timetableBody"><tr><td colspan="3" class="ps-empty">Loading…</td></tr></tbody>
     </table>
   </div>
 </main>
@@ -49,6 +48,7 @@
 <script src="../js/icons.js"></script>
 <script src="../js/data.js"></script>
 <script src="../js/shell.js"></script>
+<script src="../js/app-data.js"></script>
 <script src="../js/shifts.js"></script>
 </body>
 </html>

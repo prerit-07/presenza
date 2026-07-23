@@ -1,66 +1,99 @@
 document.addEventListener('DOMContentLoaded', async () => {
-  const data = await Store.get();
-  const nameInput = document.getElementById('fieldName');
-  const domainInput = document.getElementById('fieldDomain');
-  const emailInput = document.getElementById('fieldEmail');
-  const tzInput = document.getElementById('fieldTimezone');
-  const errorBox = document.getElementById('profileError');
-  const saveBtn = document.getElementById('saveProfileBtn');
-  const saveConfirm = document.getElementById('saveConfirm');
-
-  nameInput.value = data.orgProfile.name;
-  domainInput.value = data.orgProfile.domain;
-  emailInput.value = data.orgProfile.email;
-  tzInput.value = data.orgProfile.timezone;
-
-  function markCurrentPlan(plan) {
-    document.querySelectorAll('.plan-option').forEach(card => {
-      card.classList.remove('current');
-      const badge = card.querySelector('.plan-badge');
-      if (badge) badge.remove();
-      if (card.dataset.plan === plan) {
-        card.classList.add('current');
-        const b = document.createElement('span');
-        b.className = 'plan-badge';
-        b.textContent = 'CURRENT';
-        card.prepend(b);
-      }
-    });
+  const banner = document.getElementById('appConnBanner');
+  try {
+    await appEnsureToken();
+    const me = await AppStore.getMe();
+    banner.innerHTML = `<span class="ps-chip ps-chip-success">Connected</span> Live data from the app, logged in as <b>${escapeAppHtml(me.username)}</b> (${escapeAppHtml(me.role)})`;
+  } catch (err) {
+    banner.innerHTML = `<span class="ps-chip ps-chip-danger">Not connected</span> ${escapeAppHtml(err.message)}`;
+    return;
   }
-  markCurrentPlan(data.orgProfile.plan);
 
-  document.getElementById('planGrid').addEventListener('click', (e) => {
-    const card = e.target.closest('.plan-option');
-    if (!card) return;
-    const plan = card.dataset.plan;
-    markCurrentPlan(plan);
-    Store.updateOrgProfile({ plan });
-  });
+  const orgProfileBody = document.getElementById('orgProfileBody');
+  const presenceBody = document.getElementById('presenceSettingsBody');
 
-  saveBtn.addEventListener('click', () => {
-    errorBox.classList.remove('visible');
-    const name = nameInput.value.trim();
-    const domain = domainInput.value.trim();
-    const email = emailInput.value.trim();
-    const timezone = tzInput.value.trim();
+  let currentOrg = null;
+  let currentPresence = null;
 
-    if (!name) {
-      errorBox.textContent = 'Organization Name is required.';
-      errorBox.classList.add('visible');
-      nameInput.focus();
-      return;
+  async function loadOrgProfile() {
+    try {
+      currentOrg = await AppStore.getOrganization();
+      orgProfileBody.innerHTML = `
+        <div class="ps-stat-grid" style="grid-template-columns: repeat(auto-fill, minmax(180px,1fr)); margin-bottom:16px;">
+          <div class="ps-stat-card"><div class="ps-stat-value" style="font-size:16px;">${escapeAppHtml(currentOrg.orgName || '—')}</div><div class="ps-stat-label">Organization Name</div></div>
+          <div class="ps-stat-card"><div class="ps-stat-value" style="font-size:16px;">${escapeAppHtml(currentOrg.orgType || '—')}</div><div class="ps-stat-label">Type</div></div>
+          <div class="ps-stat-card"><div class="ps-stat-value" style="font-size:16px;">${escapeAppHtml(currentOrg.companyCode || '—')}</div><div class="ps-stat-label">Company Code</div></div>
+          <div class="ps-stat-card"><div class="ps-stat-value" style="font-size:16px;">${currentOrg.orgId ?? '—'}</div><div class="ps-stat-label">Org ID</div></div>
+          <div class="ps-stat-card"><div class="ps-stat-value" style="font-size:16px;">${currentOrg.createdAt ? new Date(currentOrg.createdAt).toLocaleDateString() : '—'}</div><div class="ps-stat-label">Created</div></div>
+        </div>
+        <button class="ps-btn ps-btn-primary" id="editOrgBtn">Edit organization</button>
+      `;
+      document.getElementById('editOrgBtn')?.addEventListener('click', () => {
+        PSModal.open({
+          title: 'Edit organization',
+          submitLabel: 'Save changes',
+          fields: [
+            { name: 'orgName', label: 'Organization name', value: currentOrg.orgName || '' },
+            { name: 'orgType', label: 'Organization type', type: 'select', options: [
+              { value: 'CORPORATE', label: 'Corporate' },
+              { value: 'EDUCATIONAL', label: 'Educational' },
+              { value: 'GOVERNMENT', label: 'Government' },
+              { value: 'NON_PROFIT', label: 'Non-profit' },
+            ], value: currentOrg.orgType || 'CORPORATE' },
+          ],
+          onSubmit: async (values) => {
+            await AppStore.updateOrganization(values.orgName, values.orgType);
+            await loadOrgProfile();
+          },
+        });
+      });
+    } catch (err) {
+      orgProfileBody.innerHTML = `<div class="ps-empty">Couldn't load this (${escapeAppHtml(err.message)}).</div>`;
     }
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (email && !emailPattern.test(email)) {
-      errorBox.textContent = 'Enter a valid email address.';
-      errorBox.classList.add('visible');
-      emailInput.focus();
-      return;
+  }
+
+  appRenderSection('orgPlanBody', AppStore.getOrganization, (org) => `
+    <div class="ps-stat-grid" style="grid-template-columns: repeat(auto-fill, minmax(180px,1fr));">
+      <div class="ps-stat-card"><div class="ps-stat-value" style="font-size:16px;">${escapeAppHtml(org.planName || '—')}</div><div class="ps-stat-label">Current Plan</div></div>
+      <div class="ps-stat-card"><div class="ps-stat-value" style="font-size:16px;">${org.maxAllowedEmployee ?? '—'}</div><div class="ps-stat-label">Max Employees</div></div>
+    </div>
+  `);
+
+  async function loadPresenceSettings() {
+    try {
+      currentPresence = await AppStore.getPresenceSettings();
+      presenceBody.innerHTML = `
+        <div class="ps-stat-grid" style="grid-template-columns: repeat(auto-fill, minmax(180px,1fr)); margin-bottom:16px;">
+          <div class="ps-stat-card"><div class="ps-stat-value" style="font-size:16px;">${currentPresence.presenceMonitoringEnabled ? 'Yes' : 'No'}</div><div class="ps-stat-label">Presence Monitoring Enabled</div></div>
+          <div class="ps-stat-card"><div class="ps-stat-value" style="font-size:16px;">${currentPresence.presenceUpdateIntervalSeconds ?? '—'}s</div><div class="ps-stat-label">Update Interval</div></div>
+          <div class="ps-stat-card"><div class="ps-stat-value" style="font-size:16px;">${currentPresence.requireTrustedWifi ? 'Yes' : 'No'}</div><div class="ps-stat-label">Require Trusted WiFi</div></div>
+        </div>
+        <button class="ps-btn ps-btn-primary" id="editPresenceBtn">Edit presence settings</button>
+      `;
+      document.getElementById('editPresenceBtn')?.addEventListener('click', () => {
+        PSModal.open({
+          title: 'Edit presence settings',
+          submitLabel: 'Save changes',
+          fields: [
+            { name: 'presenceMonitoringEnabled', label: 'Presence monitoring enabled', type: 'select', options: [
+              { value: 'true', label: 'Yes' }, { value: 'false', label: 'No' },
+            ], value: String(!!currentPresence.presenceMonitoringEnabled) },
+            { name: 'presenceUpdateIntervalSeconds', label: 'Update interval (seconds)', type: 'number', value: String(currentPresence.presenceUpdateIntervalSeconds ?? 300) },
+            { name: 'requireTrustedWifi', label: 'Require trusted WiFi', type: 'select', options: [
+              { value: 'true', label: 'Yes' }, { value: 'false', label: 'No' },
+            ], value: String(!!currentPresence.requireTrustedWifi) },
+          ],
+          onSubmit: async (values) => {
+            await AppStore.updatePresenceSettings(values.presenceMonitoringEnabled === 'true', Number(values.presenceUpdateIntervalSeconds), values.requireTrustedWifi === 'true');
+            await loadPresenceSettings();
+          },
+        });
+      });
+    } catch (err) {
+      presenceBody.innerHTML = `<div class="ps-empty">Couldn't load this (${escapeAppHtml(err.message)}).</div>`;
     }
+  }
 
-    Store.updateOrgProfile({ name, domain, timezone });
-
-    saveConfirm.style.display = 'inline';
-    setTimeout(() => { saveConfirm.style.display = 'none'; }, 2000);
-  });
+  await loadOrgProfile();
+  await loadPresenceSettings();
 });

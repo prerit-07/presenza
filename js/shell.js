@@ -7,23 +7,26 @@
    ============================================================ */
 
 const PS_NAV = {
+  // The app's admin role now does everything a manager used to (there is no
+  // MANAGER role on their side anymore) — Attendance, Attendance Requests,
+  // Device Requests and Support Tickets moved here from the old manager nav.
   organization: [
     { key: 'overview', label: 'Overview', href: 'organization.html', icon: 'home' },
     { key: 'analytics', label: 'Analytics', href: 'analytics.html', icon: 'barChart' },
     { key: 'setup', label: 'Organisation Setup', href: 'profile.html', icon: 'settings' },
     { key: 'shifts', label: 'Shifts & Timetable', href: 'shifts.html', icon: 'calendar' },
-    { key: 'codes', label: 'Join Codes', href: 'codes.html', icon: 'key' },
     { key: 'geofencing', label: 'Geofencing', href: 'geofencing.html', icon: 'mapPin' },
     { key: 'wifi', label: 'Wifi / BSSID', href: 'wifi.html', icon: 'wifi' },
     { key: 'members', label: 'Members', href: 'members.html', icon: 'users' },
-    { key: 'team', label: 'Team Management', href: 'team.html', icon: 'usersGroup' }
+    { key: 'team', label: 'Team Management', href: 'team.html', icon: 'usersGroup' },
+    { key: 'attendance', label: 'Attendance', href: 'attendance.html', icon: 'checkSquare' },
+    { key: 'leave', label: 'Attendance Requests', href: 'manager-leave.html', icon: 'fileText' },
+    { key: 'tickets', label: 'Device Requests', href: 'tickets.html', icon: 'ticket' },
+    { key: 'support-tickets', label: 'Support Tickets', href: 'app-tickets.html', icon: 'ticket' }
   ],
   manager: [
     { key: 'overview', label: 'Overview', href: 'manager.html', icon: 'home' },
     { key: 'shifts', label: 'Shifts & Timetable', href: 'shifts.html', icon: 'calendar' },
-    { key: 'attendance', label: 'Attendance', href: 'attendance.html', icon: 'checkSquare' },
-    { key: 'leave', label: 'Leave Request', href: 'manager-leave.html', icon: 'fileText' },
-    { key: 'tickets', label: 'Tickets', href: 'tickets.html', icon: 'ticket' },
     { key: 'members', label: 'Members', href: 'manager-members.html', icon: 'users' },
     { key: 'team', label: 'Team', href: 'manager-team.html', icon: 'usersGroup' }
   ],
@@ -42,7 +45,8 @@ const PS_NAV = {
        fields: [
          { name: 'name', label: 'Full name', placeholder: 'e.g. Rahul Sharma' },
          { name: 'role', label: 'Role', type: 'select', options: [
-             { value: 'Student', label: 'Student' }, { value: 'Professor', label: 'Professor' }
+             { value: 'Student', label: 'Student' }, { value: 'Professor', label: 'Professor' },
+             { value: 'Manager', label: 'Manager' }, { value: 'Employee', label: 'Employee' }
            ] }
        ],
        onSubmit: (values) => { ... }

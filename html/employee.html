@@ -11,6 +11,8 @@
 <body data-role="employee" data-page="home" data-title="My Dashboard" data-subtitle="Check in, track your attendance, and manage leave">
 
 <main>
+  <div id="appConnBanner" class="ps-card" style="margin-bottom:18px; font-size:13.5px; font-weight:600;">Connecting…</div>
+
   <div class="checkin-hero">
     <div>
       <div class="checkin-status" id="checkinStatus">Not checked in yet</div>
@@ -33,7 +35,7 @@
     <div class="ps-stat-card">
       <div class="ps-stat-icon" id="iconLeave"></div>
       <div class="ps-stat-value" id="statLeave">-</div>
-      <div class="ps-stat-label">Leaves remaining</div>
+      <div class="ps-stat-label">Pending requests</div>
     </div>
     <div class="ps-stat-card">
       <div class="ps-stat-icon" id="iconVerif"></div>
@@ -46,16 +48,23 @@
     <div class="ps-table-wrap">
       <table class="ps-table">
         <thead>
-          <tr><th>Date</th><th>Check-In</th><th>Check-Out</th><th>Zone</th><th>Status</th></tr>
+          <tr><th>Date</th><th>Check-In</th><th>Effective Check-In</th><th>WiFi</th><th>Status</th></tr>
         </thead>
         <tbody id="historyBody"></tbody>
       </table>
     </div>
 
     <div class="ps-card">
-      <div class="ps-section-head"><div class="ps-section-title">Apply for Leave</div></div>
+      <div class="ps-section-head"><div class="ps-section-title">Apply for Leave / WFH</div></div>
       <div class="ps-alert ps-alert-error" id="leaveError"></div>
       <div class="ps-alert ps-alert-success" id="leaveSuccess">Leave request submitted</div>
+      <div class="ps-field">
+        <label>Type</label>
+        <select id="leaveType">
+          <option value="LEAVE">Leave</option>
+          <option value="WFH">Work From Home</option>
+        </select>
+      </div>
       <div class="ps-field">
         <label>From date</label>
         <input type="date" id="leaveFrom">
@@ -69,6 +78,61 @@
         <input type="text" id="leaveReason" placeholder="e.g. Medical appointment">
       </div>
       <button class="ps-btn ps-btn-primary" id="leaveSubmitBtn" style="width:100%; justify-content:center;">Submit Request</button>
+    </div>
+  </div>
+
+  <div class="ps-section-head" style="margin-top: 28px;">
+    <div class="ps-section-title">My Profile — live from the app</div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items:start;">
+    <div>
+      <div class="ps-section-head"><div class="ps-section-title">My Employee Info</div></div>
+      <div id="myEmployeeBody" class="ps-card" style="margin-bottom: 20px;">Loading…</div>
+
+      <div class="ps-section-head"><div class="ps-section-title">My Teammates</div></div>
+      <div id="myTeammatesBody" class="ps-card" style="margin-bottom: 20px;">Loading…</div>
+
+      <div class="ps-section-head"><div class="ps-section-title">Request Device Change</div></div>
+      <div class="ps-card" style="margin-bottom: 20px;">
+        <div class="ps-alert ps-alert-error" id="deviceReqError"></div>
+        <div class="ps-alert ps-alert-success" id="deviceReqSuccess">Device change request submitted</div>
+        <div class="ps-field">
+          <label>Old device ID</label>
+          <input type="text" id="deviceOldId" placeholder="e.g. device-abc123">
+        </div>
+        <div class="ps-field">
+          <label>New device ID</label>
+          <input type="text" id="deviceNewId" placeholder="e.g. device-xyz789">
+        </div>
+        <div class="ps-field">
+          <label>Reason</label>
+          <input type="text" id="deviceReason" placeholder="e.g. Lost my old phone">
+        </div>
+        <button class="ps-btn ps-btn-primary" id="deviceReqSubmitBtn" style="width:100%; justify-content:center;">Submit Request</button>
+      </div>
+    </div>
+    <div>
+      <div class="ps-section-head"><div class="ps-section-title">My Tickets</div></div>
+      <div id="myTicketsBody" class="ps-card" style="margin-bottom: 20px;">Loading…</div>
+
+      <div class="ps-section-head"><div class="ps-section-title">Raise a Ticket</div></div>
+      <div class="ps-card" style="margin-bottom: 20px;">
+        <div class="ps-alert ps-alert-error" id="ticketError"></div>
+        <div class="ps-alert ps-alert-success" id="ticketSuccess">Ticket raised successfully</div>
+        <div class="ps-field">
+          <label>Subject</label>
+          <input type="text" id="ticketSubject" placeholder="e.g. Can't check in at the office">
+        </div>
+        <div class="ps-field">
+          <label>Description</label>
+          <input type="text" id="ticketDescription" placeholder="Describe the issue">
+        </div>
+        <button class="ps-btn ps-btn-primary" id="ticketSubmitBtn" style="width:100%; justify-content:center;">Raise Ticket</button>
+      </div>
+
+      <div class="ps-section-head"><div class="ps-section-title">My Attendance / Device Requests</div></div>
+      <div id="myRequestsBody" class="ps-card" style="margin-bottom: 20px;">Loading…</div>
     </div>
   </div>
 </main>
@@ -94,6 +158,7 @@
 <script src="../js/icons.js"></script>
 <script src="../js/data.js"></script>
 <script src="../js/shell.js"></script>
+<script src="../js/app-data.js"></script>
 <script src="../js/employee.js"></script>
 </body>
 </html>

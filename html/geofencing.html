@@ -9,9 +9,11 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
 </head>
-<body data-role="organization" data-page="geofencing" data-title="Geofence Zones" data-subtitle="Define the physical boundaries where check-in is allowed">
+<body data-role="organization" data-page="geofencing" data-title="Geofence Zones" data-subtitle="Live geofences from the app">
 
 <main>
+  <div id="appConnBanner" class="ps-card" style="margin-bottom:18px; font-size:13.5px; font-weight:600;">Connecting…</div>
+
   <div class="ps-section-head">
     <div class="ps-section-title" id="zoneCount">0 zones configured</div>
     <button class="ps-btn ps-btn-primary" id="addZoneBtn">Add zone</button>
@@ -24,10 +26,10 @@
       <div class="geo-map-glow"></div>
       <div class="geo-map-radar"></div>
     </div>
-    <div class="geo-map-caption">Live geofence overview — drag a pin to reposition its zone</div>
+    <div class="geo-map-caption">Live geofence overview from the app</div>
   </div>
 
-  <div class="ps-stat-grid" id="zoneGrid" style="grid-template-columns: repeat(2, 1fr);"></div>
+  <div class="ps-stat-grid" id="zoneGrid" style="grid-template-columns: repeat(2, 1fr);">Loading…</div>
 </main>
 
 <style>
@@ -70,7 +72,6 @@
   }
   @keyframes geo-radar-spin { to { transform: rotate(360deg); } }
 
-  /* Real, draggable Leaflet zone marker — a glowing blue "you can move me" dot */
   .geo-live-pin {
     position: relative;
     width: 22px; height: 22px;
@@ -118,12 +119,14 @@
   .zone-detail-row { display:flex; justify-content: space-between; font-size: 12.5px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.14); color: rgba(255,255,255,0.7); font-weight: 600; }
   .zone-detail-row:last-child { border-bottom: none; }
   .zone-detail-row b { color: #fff; }
+  .zone-card-actions { display: flex; gap: 8px; margin-top: 14px; position: relative; }
 </style>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="../js/icons.js"></script>
 <script src="../js/data.js"></script>
 <script src="../js/shell.js"></script>
+<script src="../js/app-data.js"></script>
 <script src="../js/geofencing.js"></script>
 </body>
 </html>

@@ -8,9 +8,11 @@
 <link rel="stylesheet" href="../css/theme.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
 </head>
-<body data-role="organization" data-page="wifi" data-title="Wifi / BSSID Management" data-subtitle="Registered access points used for dual-layer verification">
+<body data-role="organization" data-page="wifi" data-title="Wifi / BSSID Management" data-subtitle="Live registered access points from the app">
 
 <main>
+  <div id="appConnBanner" class="ps-card" style="margin-bottom:18px; font-size:13.5px; font-weight:600;">Connecting…</div>
+
   <div class="ps-table-wrap" style="margin-bottom: 20px;">
     <table class="ps-table">
       <thead>
@@ -18,12 +20,12 @@
           <th>Zone</th>
           <th>SSID</th>
           <th>BSSID</th>
-          <th>Registered By</th>
+          <th>Added</th>
           <th>Status</th>
-          <th>Actions</th>
+          <th></th>
         </tr>
       </thead>
-      <tbody id="wifiTableBody"></tbody>
+      <tbody id="wifiTableBody"><tr><td colspan="6" class="ps-empty">Loading…</td></tr></tbody>
     </table>
   </div>
 
@@ -35,6 +37,7 @@
 <script src="../js/icons.js"></script>
 <script src="../js/data.js"></script>
 <script src="../js/shell.js"></script>
+<script src="../js/app-data.js"></script>
 <script src="../js/wifi.js"></script>
 </body>
 </html>

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Presenza — App Data (Live)</title>
+<style>
+  :root {
+    --brand-500: #7c3aed;
+    --brand-600: #6d28d9;
+    --brand-700: #5b21b6;
+    --bg: #f6f4fb;
+    --card: #ffffff;
+    --border: #e6e1f5;
+    --text-900: #1f1a33;
+    --text-500: #6b6480;
+    --success: #16a34a;
+    --danger: #dc2626;
+    --warn: #d97706;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Segoe UI", Inter, Roboto, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text-900);
+  }
+  header {
+    background: linear-gradient(135deg, var(--brand-600), var(--brand-700));
+    color: #fff;
+    padding: 28px 32px;
+  }
+  header h1 { margin: 0 0 4px; font-size: 24px; font-weight: 800; }
+  header p { margin: 0; opacity: 0.85; font-size: 13.5px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 24px 20px 60px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(90, 60, 160, 0.06);
+  }
+  .section-title { font-size: 15px; font-weight: 800; margin: 26px 0 10px; color: var(--text-900); }
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; }
+  .stat-card {
+    background: linear-gradient(155deg, var(--brand-500), var(--brand-700));
+    color: #fff;
+    border-radius: 12px;
+    padding: 14px 16px;
+  }
+  .stat-value { font-size: 15px; font-weight: 700; word-break: break-word; }
+  .stat-label { font-size: 11.5px; opacity: 0.75; margin-top: 4px; font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--border); }
+  th { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-500); }
+  .chip { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+  .chip-success { background: #dcfce7; color: var(--success); }
+  .chip-danger { background: #fee2e2; color: var(--danger); }
+  .chip-warn { background: #fef3c7; color: var(--warn); }
+  .empty { color: var(--text-500); font-size: 13px; padding: 8px 0; }
+  .badge-dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; }
+  .banner { font-size: 13.5px; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>App Data (Live)</h1>
+  <p>Standalone read-only viewer — no website login needed, connects directly to the app's live backend.</p>
+</header>
+
+<main>
+  <div class="card banner" id="connBanner">Connecting…</div>
+
+  <div class="section-title">Organization</div>
+  <div class="card" id="orgBody">Loading…</div>
+
+  <div class="section-title">My Profile (from the app)</div>
+  <div class="card" id="myProfileBody">Loading…</div>
+
+  <div class="section-title">Shifts</div>
+  <div class="card" id="shiftsBody">Loading…</div>
+
+  <div class="section-title">Geofences</div>
+  <div class="card" id="geofencesBody">Loading…</div>
+
+  <div class="section-title">Departments</div>
+  <div class="card" id="departmentsBody">Loading…</div>
+
+  <div class="section-title">Teams</div>
+  <div class="card" id="teamsBody">Loading…</div>
+
+  <div class="section-title">All Employees</div>
+  <div class="card" id="employeesBody">Loading…</div>
+
+  <div class="section-title">All Tickets</div>
+  <div class="card" id="ticketsBody">Loading…</div>
+
+  <div class="section-title">Pending Attendance Requests</div>
+  <div class="card" id="pendingAttendanceBody">Loading…</div>
+
+  <div class="section-title">Pending Device Change Requests</div>
+  <div class="card" id="pendingDeviceBody">Loading…</div>
+</main>
+
+<script>
+  const APP_API_BASE = 'https://presenza-backend-sumit-hugqdzfwfxeybngu.centralindia-01.azurewebsites.net';
+  const APP_CREDENTIALS = { email: 'saipattnaik13@gmail.com', password: 'zibmec-rupqiJ-7xefda' };
+
+  let appToken = null;
+  let appTokenExpiresAt = 0;
+
+  async function appLogin() {
+    const res = await fetch(`${APP_API_BASE}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(APP_CREDENTIALS),
+    });
+    if (!res.ok) throw new Error(`App login failed (${res.status})`);
+    const data = await res.json();
+    appToken = data.token;
+    appTokenExpiresAt = data.expiresAt ? new Date(data.expiresAt).getTime() : 0;
+    return appToken;
+  }
+
+  async function appEnsureToken() {
+    if (appToken && Date.now() < appTokenExpiresAt - 60000) return appToken;
+    return appLogin();
+  }
+
+  async function appRequest(path) {
+    const token = await appEnsureToken();
+    let res = await fetch(`${APP_API_BASE}${path}`, { headers: { Authorization: `Bearer ${token}` } });
+    if (res.status === 401) {
+      await appLogin();
+      res = await fetch(`${APP_API_BASE}${path}`, { headers: { Authorization: `Bearer ${appToken}` } });
+    }
+    if (!res.ok) {
+      const err = new Error(`${path} failed (${res.status})`);
+      err.status = res.status;
+      throw err;
+    }
+    const text = await res.text();
+    return text ? JSON.parse(text) : null;
+  }
+
+  const AppStore = {
+    getMe: () => appRequest('/auth/me'),
+    getMyEmployee: () => appRequest('/api/employees/me'),
+    getOrganization: () => appRequest('/api/organizations/me'),
+    getShifts: () => appRequest('/api/shifts'),
+    getGeofences: () => appRequest('/api/geofences'),
+    getDepartments: () => appRequest('/api/departments'),
+    getTeams: () => appRequest('/api/teams'),
+    getAllEmployees: () => appRequest('/api/employees'),
+    getOrganizationTickets: () => appRequest('/tickets'),
+    getPendingAttendanceRequests: () => appRequest('/attendance-requests/pending'),
+    getPendingDeviceChangeRequests: () => appRequest('/device-change-requests/pending'),
+  };
+
+  function esc(str) {
+    if (str == null) return '';
+    return String(str).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  function fmtTime(t) {
+    if (!t) return '—';
+    const [h, m] = t.split(':');
+    const hour = ((+h + 11) % 12) + 1;
+    return `${hour}:${m} ${+h < 12 ? 'AM' : 'PM'}`;
+  }
+
+  async function renderSection(id, loader, render) {
+    const el = document.getElementById(id);
+    try {
+      const data = await loader();
+      el.innerHTML = render(data);
+    } catch (err) {
+      if (err.status === 403) {
+        el.innerHTML = `<div class="empty">Needs a manager/org-admin account on their side to view this.</div>`;
+      } else if (err.status === 404) {
+        el.innerHTML = `<div class="empty">Not found / no data yet.</div>`;
+      } else {
+        el.innerHTML = `<div class="empty">Couldn't load this (${esc(err.message)}).</div>`;
+      }
+    }
+  }
+
+  (async () => {
+    const banner = document.getElementById('connBanner');
+    try {
+      await appEnsureToken();
+      const me = await AppStore.getMe();
+      banner.innerHTML = `<span class="chip chip-success">Connected</span> &nbsp;Logged into the app as <b>${esc(me.username)}</b> (${esc(me.role)})`;
+    } catch (err) {
+      banner.innerHTML = `<span class="chip chip-danger">Not connected</span> &nbsp;${esc(err.message)}`;
+      return;
+    }
+
+    renderSection('orgBody', AppStore.getOrganization, (org) => `
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-value">${esc(org.orgName || '—')}</div><div class="stat-label">Name</div></div>
+        <div class="stat-card"><div class="stat-value">${esc(org.orgType || '—')}</div><div class="stat-label">Type</div></div>
+        <div class="stat-card"><div class="stat-value">${esc(org.companyCode || '—')}</div><div class="stat-label">Company Code</div></div>
+        <div class="stat-card"><div class="stat-value">${esc(org.planName || '—')}</div><div class="stat-label">Plan</div></div>
+        <div class="stat-card"><div class="stat-value">${org.maxAllowedEmployee ?? '—'}</div><div class="stat-label">Max Employees</div></div>
+        <div class="stat-card"><div class="stat-value">${org.orgId ?? '—'}</div><div class="stat-label">Org ID</div></div>
+      </div>`);
+
+    renderSection('myProfileBody', AppStore.getMyEmployee, (e) => `
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-value">${esc(e.employeeName)}</div><div class="stat-label">Name</div></div>
+        <div class="stat-card"><div class="stat-value">${esc(e.dateOfJoining || '—')}</div><div class="stat-label">Date of Joining</div></div>
+        <div class="stat-card"><div class="stat-value">${e.departmentId ?? '—'}</div><div class="stat-label">Department ID</div></div>
+        <div class="stat-card"><div class="stat-value">${e.shiftId ?? '—'}</div><div class="stat-label">Shift ID</div></div>
+        <div class="stat-card"><div class="stat-value">${e.teamId ?? '—'}</div><div class="stat-label">Team ID</div></div>
+      </div>`);
+
+    renderSection('shiftsBody', AppStore.getShifts, (shifts) => {
+      if (!shifts.length) return `<div class="empty">No shifts configured yet.</div>`;
+      return `<table><thead><tr><th>Shift</th><th>Timing</th><th>Late allowance</th><th>Geofence</th></tr></thead><tbody>
+        ${shifts.map(s => `<tr><td>${esc(s.shiftName)}</td><td>${fmtTime(s.startTime)} – ${fmtTime(s.endTime)}</td><td>${s.allowedLateMinutes ?? '—'} min</td><td>${s.geofenceId ?? '—'}</td></tr>`).join('')}
+      </tbody></table>`;
+    });
+
+    renderSection('geofencesBody', AppStore.getGeofences, (zones) => {
+      if (!zones.length) return `<div class="empty">No geofences configured yet.</div>`;
+      return `<table><thead><tr><th>Building</th><th>Latitude</th><th>Longitude</th><th>Radius</th></tr></thead><tbody>
+        ${zones.map(z => `<tr><td>${esc(z.buildingName || '—')}</td><td>${z.latitude}</td><td>${z.longitude}</td><td>${z.radius} m</td></tr>`).join('')}
+      </tbody></table>`;
+    });
+
+    renderSection('departmentsBody', AppStore.getDepartments, (deps) => {
+      if (!deps.length) return `<div class="empty">No departments configured yet.</div>`;
+      return `<table><thead><tr><th>Department</th><th>ID</th></tr></thead><tbody>
+        ${deps.map(d => `<tr><td>${esc(d.departmentName || d.name || '—')}</td><td>${d.departmentId ?? '—'}</td></tr>`).join('')}
+      </tbody></table>`;
+    });
+
+    renderSection('teamsBody', AppStore.getTeams, (teams) => {
+      if (!teams.length) return `<div class="empty">No teams configured yet.</div>`;
+      return `<table><thead><tr><th>Team</th><th>ID</th><th>Manager Employee ID</th></tr></thead><tbody>
+        ${teams.map(t => `<tr><td>${esc(t.teamName || '—')}</td><td>${t.teamId ?? '—'}</td><td>${t.managerEmployeeId ?? '—'}</td></tr>`).join('')}
+      </tbody></table>`;
+    });
+
+    renderSection('employeesBody', AppStore.getAllEmployees, (emps) => {
+      if (!emps.length) return `<div class="empty">No employees found.</div>`;
+      return `<table><thead><tr><th>Name</th><th>Employee ID</th><th>Department</th><th>Shift</th><th>Team</th></tr></thead><tbody>
+        ${emps.map(e => `<tr><td>${esc(e.employeeName)}</td><td>${e.employeeId}</td><td>${e.departmentId ?? '—'}</td><td>${e.shiftId ?? '—'}</td><td>${e.teamId ?? '—'}</td></tr>`).join('')}
+      </tbody></table>`;
+    });
+
+    renderSection('ticketsBody', AppStore.getOrganizationTickets, (tickets) => {
+      if (!tickets.length) return `<div class="empty">No tickets.</div>`;
+      return `<table><thead><tr><th>Subject</th><th>Status</th></tr></thead><tbody>
+        ${tickets.map(t => `<tr><td>${esc(t.subject || t.title || '—')}</td><td>${esc(t.status || '—')}</td></tr>`).join('')}
+      </tbody></table>`;
+    });
+
+    renderSection('pendingAttendanceBody', AppStore.getPendingAttendanceRequests, (reqs) => {
+      if (!reqs.length) return `<div class="empty">No pending attendance requests.</div>`;
+      return `<table><thead><tr><th>Type</th><th>Status</th></tr></thead><tbody>
+        ${reqs.map(r => `<tr><td>${esc(r.requestType || '—')}</td><td>${esc(r.status || '—')}</td></tr>`).join('')}
+      </tbody></table>`;
+    });
+
+    renderSection('pendingDeviceBody', AppStore.getPendingDeviceChangeRequests, (reqs) => {
+      if (!reqs.length) return `<div class="empty">No pending device-change requests.</div>`;
+      return `<table><thead><tr><th>Old device</th><th>New device</th><th>Status</th></tr></thead><tbody>
+        ${reqs.map(r => `<tr><td>${esc(r.oldDevice || '—')}</td><td>${esc(r.newDevice || '—')}</td><td>${esc(r.status || '—')}</td></tr>`).join('')}
+      </tbody></table>`;
+    });
+  })();
+</script>
+</body>
+</html>

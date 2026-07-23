@@ -3,21 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Presenza - Tickets</title>
+<title>Presenza - Device Change Requests</title>
 <link rel="icon" type="image/svg+xml" href="../images/presenza-logo.svg">
 <link rel="stylesheet" href="../css/theme.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
 </head>
-<body data-role="manager" data-page="tickets" data-title="Tickets" data-subtitle="Device change requests awaiting review">
+<body data-role="organization" data-roles="organization,manager" data-page="tickets" data-title="Device Change Requests" data-subtitle="Live from the app (read-only)">
 
-<div class="ps-section-head">
-  <div class="ps-section-title">Device change tickets</div>
-  <div style="display:flex; gap:10px;">
-    <button class="ps-btn ps-btn-primary ps-btn-sm" id="bulkAcceptBtn" style="display:none;">Accept selected</button>
-    <button class="ps-btn ps-btn-danger ps-btn-sm" id="bulkRejectTicketsBtn" style="display:none;">Reject selected</button>
+<main>
+  <div id="appConnBanner" class="ps-card" style="margin-bottom:18px; font-size:13.5px; font-weight:600;">Connecting…</div>
+
+  <div class="ps-section-head">
+    <div class="ps-section-title">Pending device change requests</div>
   </div>
-</div>
-<main id="tixMain" style="display:flex; flex-direction:column; gap:16px;"></main>
+  <main id="tixMain" style="display:flex; flex-direction:column; gap:16px;">Loading…</main>
+</main>
 
 <style>
   .tix-card {
@@ -25,7 +25,6 @@
     border: none; border-radius: var(--radius-lg); padding: 20px 24px;
     box-shadow: 0 10px 26px rgba(41,24,92,0.28);
   }
-  .tix-card.rejected { opacity: 0.6; }
   .tix-top { display:flex; align-items:center; justify-content:space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; }
   .tix-user { display:flex; align-items:center; gap: 12px; }
   .tix-avatar { width: 38px; height: 38px; border-radius: 50%; background: rgba(255,255,255,0.16); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; flex-shrink: 0; }
@@ -41,6 +40,7 @@
 <script src="../js/icons.js"></script>
 <script src="../js/data.js"></script>
 <script src="../js/shell.js"></script>
+<script src="../js/app-data.js"></script>
 <script src="../js/tickets.js"></script>
 </body>
 </html>

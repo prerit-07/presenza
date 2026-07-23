@@ -8,15 +8,25 @@
 <link rel="stylesheet" href="../css/theme.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
 </head>
-<body data-role="organization" data-page="team" data-title="Team Management" data-subtitle="Admins and managers who help run your organization">
+<body data-role="organization" data-page="team" data-title="Team Management" data-subtitle="Live teams & departments from the app">
 
 <main>
-  <div class="ps-card ps-card-accent" style="margin-bottom: 20px; min-height: 200px;">
-    <div id="teamCard"></div>
+  <div id="appConnBanner" class="ps-card" style="margin-bottom:18px; font-size:13.5px; font-weight:600;">Connecting…</div>
+
+  <div class="ps-section-head">
+    <div class="ps-section-title">Teams</div>
+    <button class="ps-btn ps-btn-primary" id="addTeamBtn">Add team</button>
+  </div>
+  <div class="ps-card ps-card-accent" style="margin-bottom: 24px; min-height: 120px;">
+    <div id="teamCard">Loading…</div>
   </div>
 
-  <div style="display:flex; justify-content:flex-end;">
-    <button class="ps-btn ps-btn-primary" id="addMemberBtn">Add team member</button>
+  <div class="ps-section-head">
+    <div class="ps-section-title">Departments</div>
+    <button class="ps-btn ps-btn-primary" id="addDeptBtn">Add department</button>
+  </div>
+  <div class="ps-card ps-card-accent" style="margin-bottom: 20px; min-height: 120px;">
+    <div id="deptCard">Loading…</div>
   </div>
 </main>
 
@@ -39,6 +49,7 @@
 <script src="../js/icons.js"></script>
 <script src="../js/data.js"></script>
 <script src="../js/shell.js"></script>
+<script src="../js/app-data.js"></script>
 <script src="../js/team.js"></script>
 </body>
 </html>

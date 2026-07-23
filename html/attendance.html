@@ -8,18 +8,22 @@
 <link rel="stylesheet" href="../css/theme.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
 </head>
-<body data-role="manager" data-page="attendance" data-title="Attendance Record" data-subtitle="Real-time check-in / check-out log">
+<body data-role="organization" data-roles="organization,manager" data-page="attendance" data-title="Attendance Record" data-subtitle="Live from the app — add manual entries and corrections">
 
 <main>
+  <div id="appConnBanner" class="ps-card" style="margin-bottom:18px; font-size:13.5px; font-weight:600;">Connecting…</div>
+
   <div class="ps-card attendance-filter-bar">
-    <button class="ps-btn ps-btn-ghost" id="dateBtn">28-06-26</button>
     <select class="attendance-filter-select" id="statusFilter">
       <option>All status</option>
       <option>Present</option>
       <option>Absent</option>
-      <option>On Leave</option>
+      <option>Late</option>
+      <option>Pending</option>
+      <option>Rejected</option>
     </select>
-    <button class="ps-btn ps-btn-primary attendance-export-btn" id="exportBtn">Export</button>
+    <button class="ps-btn ps-btn-primary" id="addManualBtn">Add manual entry</button>
+    <button class="ps-btn ps-btn-primary attendance-export-btn" id="exportBtn">Export CSV</button>
   </div>
 
   <div class="ps-table-wrap">
@@ -28,35 +32,14 @@
         <tr>
           <th>Name</th>
           <th>Check-In</th>
-          <th>Check-Out</th>
-          <th>Zone</th>
+          <th>Effective Check-In</th>
+          <th>WiFi</th>
           <th>Status</th>
-          <th>Action</th>
+          <th></th>
         </tr>
       </thead>
-      <tbody id="attendanceBody"></tbody>
+      <tbody id="attendanceBody"><tr><td colspan="6" class="ps-empty">Loading…</td></tr></tbody>
     </table>
-  </div>
-
-  <div class="ps-card" style="margin-top:20px;">
-    <div class="ps-section-head"><div class="ps-section-title">Date-range report</div></div>
-    <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:14px;">
-      <input type="date" id="reportFrom" class="attendance-filter-select">
-      <span style="color:var(--text-500);">to</span>
-      <input type="date" id="reportTo" class="attendance-filter-select">
-      <button class="ps-btn ps-btn-ghost" id="reportViewBtn">View report</button>
-      <button class="ps-btn ps-btn-primary" id="reportExportBtn">Export CSV</button>
-    </div>
-    <div class="ps-table-wrap">
-      <table class="ps-table">
-        <thead>
-          <tr>
-            <th>Name</th><th>Present</th><th>Late</th><th>On Leave</th><th>Absent</th><th>Working Days</th><th>Rate</th>
-          </tr>
-        </thead>
-        <tbody id="reportBody"></tbody>
-      </table>
-    </div>
   </div>
 </main>
 
@@ -86,6 +69,7 @@
 <script src="../js/icons.js"></script>
 <script src="../js/data.js"></script>
 <script src="../js/shell.js"></script>
+<script src="../js/app-data.js"></script>
 <script src="../js/attendance.js"></script>
 </body>
 </html>

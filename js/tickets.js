@@ -1,88 +1,85 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   const main = document.getElementById('tixMain');
-  const bulkAcceptBtn = document.getElementById('bulkAcceptBtn');
-  const bulkRejectBtn = document.getElementById('bulkRejectTicketsBtn');
+  const banner = document.getElementById('appConnBanner');
 
-  function chipClass(status) {
-    if (status === 'Pending') return 'ps-chip-warn';
-    if (status === 'Accepted') return 'ps-chip-success';
-    return 'ps-chip-danger';
+  try {
+    await appEnsureToken();
+    const me = await AppStore.getMe();
+    banner.innerHTML = '<span class="ps-chip ps-chip-success">Connected</span> Live data from the app, logged in as <b>' + escapeAppHtml(me.username) + '</b> (' + escapeAppHtml(me.role) + ')';
+  } catch (err) {
+    banner.innerHTML = '<span class="ps-chip ps-chip-danger">Not connected</span> ' + escapeAppHtml(err.message);
+    main.innerHTML = '<div class="ps-empty">Couldn\'t connect to the app.</div>';
+    return;
   }
 
-  function selectedIds() {
-    return [...main.querySelectorAll('.tix-select:checked')].map(cb => Number(cb.dataset.id));
-  }
+  let employees = [];
+  try { employees = await AppStore.getAllEmployees(); } catch { /* used to resolve names, non-fatal */ }
+  const employeeByUserId = {};
+  employees.forEach((e) => { employeeByUserId[e.userId] = e.employeeName; });
 
-  function updateBulkButtons() {
-    const any = selectedIds().length > 0;
-    bulkAcceptBtn.style.display = any ? '' : 'none';
-    bulkRejectBtn.style.display = any ? '' : 'none';
-  }
+  async function load() {
+    let requests = [];
+    try {
+      requests = (await AppStore.getPendingDeviceChangeRequests()) || [];
+    } catch (err) {
+      main.innerHTML = err.status === 403
+        ? '<div class="ps-empty">Needs an org-admin account on their side to review requests.</div>'
+        : '<div class="ps-empty">Couldn\'t load device change requests (' + escapeAppHtml(err.message) + ').</div>';
+      return;
+    }
 
-  async function render() {
-    const data = await Store.get();
-    main.innerHTML = data.tickets.map((t, idx) => `
-      <div class="tix-card ${t.status === 'Rejected' ? 'rejected' : ''}" data-index="${idx}">
-        <div class="tix-top">
-          <div class="tix-user">
-            ${t.status === 'Pending' ? `<input type="checkbox" class="tix-select" data-id="${t.id}" style="width:16px; height:16px;">` : ''}
-            <div class="tix-avatar">${t.name.slice(0, 2).toUpperCase()}</div>
-            <div>
-              <div class="tix-name">${t.name}</div>
-              <div class="tix-section">${t.section}</div>
+    if (!requests.length) {
+      main.innerHTML = '<div class="ps-empty">No pending device change requests.</div>';
+      return;
+    }
+
+    main.innerHTML = requests.map((r) => {
+      const name = employeeByUserId[r.userId] || ('User #' + r.userId);
+      return `
+        <div class="tix-card" data-request-id="${r.requestId}">
+          <div class="tix-top">
+            <div class="tix-user">
+              <div class="tix-avatar">${escapeAppHtml(String(name).slice(0, 2).toUpperCase())}</div>
+              <div>
+                <div class="tix-name">${escapeAppHtml(name)}</div>
+                <div class="tix-section">Device change request</div>
+              </div>
+            </div>
+            <span class="ps-chip ps-chip-warn">${escapeAppHtml(r.status || 'Pending')}</span>
+          </div>
+          <div class="tix-body">
+            <div class="tix-devices">
+              <div><b>OLD DEVICE:</b> ${escapeAppHtml(r.oldDeviceId || '—')}</div>
+              <div><b>NEW DEVICE:</b> ${escapeAppHtml(r.newDeviceId || '—')}</div>
+              <div><b>Reason:</b> ${escapeAppHtml(r.reason || '-')}</div>
+            </div>
+            <div class="tix-actions">
+              <button class="ps-btn ps-btn-primary btn-approve">Approve</button>
+              <button class="ps-btn ps-btn-danger btn-reject">Reject</button>
             </div>
           </div>
-          <span class="ps-chip ${chipClass(t.status)}">${t.status}</span>
-        </div>
-        <div class="tix-body">
-          <div class="tix-devices">
-            <div><b>OLD DEVICE:</b> ${t.oldDevice}</div>
-            <div><b>NEW DEVICE:</b> ${t.newDevice}</div>
-            <div><b>Reason:</b> ${t.reason}</div>
-          </div>
-          ${t.status === 'Pending' ? `
-          <div class="tix-actions">
-            <button class="ps-btn ps-btn-primary btn-accept">Accept</button>
-            <button class="ps-btn ps-btn-danger btn-reject">Reject</button>
-          </div>` : ''}
-        </div>
-        <div class="tix-time">${t.time}</div>
-      </div>
-    `).join('') || '<div class="ps-empty">No pending tickets.</div>';
-
-    updateBulkButtons();
-    main.querySelectorAll('.tix-select').forEach(cb => cb.addEventListener('change', updateBulkButtons));
+          <div class="tix-time">${r.requestedAt ? escapeAppHtml(new Date(r.requestedAt).toLocaleString()) : ''}</div>
+        </div>`;
+    }).join('');
   }
 
-  render();
+  await load();
 
   main.addEventListener('click', async (e) => {
     const card = e.target.closest('.tix-card');
     if (!card) return;
-    const idx = Number(card.dataset.index);
-    const ticket = (await Store.get()).tickets[idx];
+    const requestId = Number(card.dataset.requestId);
+    const approved = !!e.target.closest('.btn-approve');
+    const rejected = !!e.target.closest('.btn-reject');
+    if (!approved && !rejected) return;
 
-    if (e.target.closest('.btn-accept')) {
-      await Store.updateTicketStatus(ticket.id, 'ACCEPTED');
-      render();
+    if (!confirm((approved ? 'Approve' : 'Reject') + ' this device change request?')) return;
+
+    try {
+      await AppStore.reviewDeviceChangeRequest(requestId, approved);
+      await load();
+    } catch (err) {
+      alert('Could not submit review: ' + err.message);
     }
-    if (e.target.closest('.btn-reject')) {
-      await Store.updateTicketStatus(ticket.id, 'REJECTED');
-      render();
-    }
-  });
-
-  bulkAcceptBtn.addEventListener('click', async () => {
-    const ids = selectedIds();
-    if (!ids.length) return;
-    await Store.bulkUpdateTicketStatus(ids, 'ACCEPTED');
-    render();
-  });
-
-  bulkRejectBtn.addEventListener('click', async () => {
-    const ids = selectedIds();
-    if (!ids.length) return;
-    await Store.bulkUpdateTicketStatus(ids, 'REJECTED');
-    render();
   });
 });

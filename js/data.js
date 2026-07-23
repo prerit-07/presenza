@@ -30,8 +30,8 @@ const Store = (() => {
     let res;
     try {
       res = await fetch(API_BASE + path, {
-        method,
-        headers,
+        method: method,
+        headers: headers,
         body: body !== undefined ? JSON.stringify(body) : undefined
       });
     } catch (e) {
@@ -45,7 +45,7 @@ const Store = (() => {
     }
 
     if (!res.ok) {
-      const message = (parsed && parsed.message) || `Request failed (${res.status})`;
+      const message = (parsed && parsed.message) || ('Request failed (' + res.status + ')');
       throw new Error(message);
     }
     return parsed;
@@ -90,16 +90,16 @@ const Store = (() => {
     const diffMs = Date.now() - then;
     const mins = Math.round(diffMs / 60000);
     if (mins < 1) return 'just now';
-    if (mins < 60) return `${mins} min ago`;
+    if (mins < 60) return mins + ' min ago';
     const hrs = Math.round(mins / 60);
-    if (hrs < 24) return `${hrs} hr ago`;
+    if (hrs < 24) return hrs + ' hr ago';
     const days = Math.round(hrs / 24);
-    return `${days} day${days === 1 ? '' : 's'} ago`;
+    return days + ' day' + (days === 1 ? '' : 's') + ' ago';
   }
 
   function mapCodes(list) {
-    const manager = list.find(c => c.role === 'MANAGER');
-    const employee = list.find(c => c.role === 'EMPLOYEE');
+    const manager = list.find(function (c) { return c.role === 'MANAGER'; });
+    const employee = list.find(function (c) { return c.role === 'EMPLOYEE'; });
     return {
       manager: manager ? manager.code : '',
       managerId: manager ? manager.id : null,
@@ -118,7 +118,7 @@ const Store = (() => {
   async function fetchAll() {
     const session = readSession();
     const base = {
-      session,
+      session: session,
       orgProfile: { name: '', domain: '', email: '', timezone: 'Asia/Kolkata', plan: 'FREE' },
       codes: { manager: '', employee: '', expiry: 'Never', maxUses: 'Unlimited' },
       zones: [], routers: [], members: [], team: [],
@@ -132,23 +132,24 @@ const Store = (() => {
     const isEmployee = session.role === 'employee';
 
     // All independent reads fire in parallel instead of one-at-a-time.
-    const [
-      orgProfile, codesRaw, zones, routers, members, team,
-      ticketsRaw, activityRaw, leaveRaw, attendanceMe, attendanceToday, myDashboard
-    ] = await Promise.all([
-      safe(() => request('GET', '/organization'), base.orgProfile),
-      safe(() => request('GET', '/join-codes'), []),
-      safe(() => request('GET', '/zones'), []),
-      safe(() => request('GET', '/routers'), []),
-      safe(() => request('GET', '/members'), []),
-      safe(() => request('GET', '/team'), []),
-      safe(() => request('GET', '/tickets'), []),
-      safe(() => request('GET', '/activity?limit=8'), []),
-      safe(() => request('GET', leavePath), []),
-      isEmployee ? safe(() => request('GET', '/attendance/me'), []) : Promise.resolve([]),
-      isEmployee ? Promise.resolve([]) : safe(() => request('GET', '/attendance'), []),
-      isEmployee ? safe(() => request('GET', '/attendance/me/dashboard'), emptyDashboard) : Promise.resolve(emptyDashboard)
+    const results = await Promise.all([
+      safe(function () { return request('GET', '/organization'); }, base.orgProfile),
+      safe(function () { return request('GET', '/join-codes'); }, []),
+      safe(function () { return request('GET', '/zones'); }, []),
+      safe(function () { return request('GET', '/routers'); }, []),
+      safe(function () { return request('GET', '/members'); }, []),
+      safe(function () { return request('GET', '/team'); }, []),
+      safe(function () { return request('GET', '/tickets'); }, []),
+      safe(function () { return request('GET', '/activity?limit=8'); }, []),
+      safe(function () { return request('GET', leavePath); }, []),
+      isEmployee ? safe(function () { return request('GET', '/attendance/me'); }, []) : Promise.resolve([]),
+      isEmployee ? Promise.resolve([]) : safe(function () { return request('GET', '/attendance'); }, []),
+      isEmployee ? safe(function () { return request('GET', '/attendance/me/dashboard'); }, emptyDashboard) : Promise.resolve(emptyDashboard)
     ]);
+
+    const orgProfile = results[0], codesRaw = results[1], zones = results[2], routers = results[3],
+      members = results[4], team = results[5], ticketsRaw = results[6], activityRaw = results[7],
+      leaveRaw = results[8], attendanceMe = results[9], attendanceToday = results[10], myDashboard = results[11];
 
     base.orgProfile = orgProfile;
     base.codes = mapCodes(codesRaw);
@@ -156,9 +157,9 @@ const Store = (() => {
     base.routers = routers;
     base.members = members;
     base.team = team;
-    base.tickets = ticketsRaw.map(t => ({ ...t, time: timeAgo(t.time) }));
-    base.activity = activityRaw.map(a => ({ ...a, time: timeAgo(a.time) }));
-    base.leaveRequests = leaveRaw.map(r => ({ ...r, appliedOn: timeAgo(r.appliedOn) }));
+    base.tickets = ticketsRaw.map(function (t) { return Object.assign({}, t, { time: timeAgo(t.time) }); });
+    base.activity = activityRaw.map(function (a) { return Object.assign({}, a, { time: timeAgo(a.time) }); });
+    base.leaveRequests = leaveRaw.map(function (r) { return Object.assign({}, r, { appliedOn: timeAgo(r.appliedOn) }); });
     base.attendanceMe = attendanceMe;
     base.attendanceToday = attendanceToday;
     base.myDashboard = myDashboard;
@@ -194,8 +195,38 @@ const Store = (() => {
   // ---------- auth ----------
 
   async function loginWithPassword(email, password) {
-    const res = await request('POST', '/auth/login', { email, password });
+    const res = await request('POST', '/auth/login', { email: email, password: password });
     return saveAuth(res);
+  }
+
+  // ---------- app login (pure) ----------
+  // The app is the one and only backend now. Login authenticates
+  // directly against it — no mirroring, no second JWT from our own
+  // backend. This website's "session" is just a thin localStorage
+  // wrapper around the app's own identity (role/name/email/userId).
+
+  // The app dropped the MANAGER role entirely (one admin does everything,
+  // one employee role) — map straight to the two site roles that matter now.
+  const APP_ROLE_TO_SITE_ROLE = { ORG_ADMIN: 'organization', EMPLOYEE: 'employee' };
+
+  function saveAppSession(appProfile) {
+    const session = {
+      role: APP_ROLE_TO_SITE_ROLE[appProfile.role] || 'employee',
+      name: appProfile.username,
+      userId: appProfile.userId,
+      email: appProfile.email,
+    };
+    localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    cache = null;
+    return session;
+  }
+
+  /** The only login flow the website uses now — authenticates straight
+   *  against the app. Whatever error the app throws (invalid credentials,
+   *  unreachable, etc.) surfaces as-is to the login form. */
+  async function loginWithApp(email, password) {
+    const appProfile = await window.appLoginAs(email, password);
+    return saveAppSession(appProfile);
   }
 
   async function signupOrganization(payload) {
@@ -209,8 +240,8 @@ const Store = (() => {
   }
 
   function login(role, name) {
-    // Legacy demo helper — no longer used now that login.js calls loginWithPassword().
-    localStorage.setItem(SESSION_KEY, JSON.stringify({ role, name: name || 'ABC' }));
+    // Legacy demo helper — no longer used now that login.js calls loginWithApp().
+    localStorage.setItem(SESSION_KEY, JSON.stringify({ role: role, name: name || 'ABC' }));
     cache = null;
   }
 
@@ -242,13 +273,13 @@ const Store = (() => {
   // ---------- join codes ----------
 
   async function regenerateCode(codeId) {
-    const res = await request('POST', `/join-codes/${codeId}/regenerate`);
+    const res = await request('POST', '/join-codes/' + codeId + '/regenerate');
     invalidate();
     return res;
   }
 
   async function updateCodeSettings(codeId, settings) {
-    const res = await request('PATCH', `/join-codes/${codeId}`, settings);
+    const res = await request('PATCH', '/join-codes/' + codeId, settings);
     invalidate();
     return res;
   }
@@ -262,13 +293,13 @@ const Store = (() => {
   }
 
   async function updateZone(id, partial) {
-    const res = await request('PATCH', `/zones/${id}`, partial);
+    const res = await request('PATCH', '/zones/' + id, partial);
     invalidate();
     return res;
   }
 
   async function deleteZone(id) {
-    await request('DELETE', `/zones/${id}`);
+    await request('DELETE', '/zones/' + id);
     invalidate();
   }
 
@@ -281,13 +312,13 @@ const Store = (() => {
   }
 
   async function updateRouter(id, partial) {
-    const res = await request('PATCH', `/routers/${id}`, partial);
+    const res = await request('PATCH', '/routers/' + id, partial);
     invalidate();
     return res;
   }
 
   async function deleteRouter(id) {
-    await request('DELETE', `/routers/${id}`);
+    await request('DELETE', '/routers/' + id);
     invalidate();
   }
 
@@ -300,7 +331,7 @@ const Store = (() => {
   }
 
   async function importMembers(csv) {
-    const res = await request('POST', '/members/import', { csv });
+    const res = await request('POST', '/members/import', { csv: csv });
     invalidate();
     return res;
   }
@@ -322,13 +353,13 @@ const Store = (() => {
   }
 
   async function updateLeaveStatus(id, status) {
-    const res = await request('PATCH', `/leave-requests/${id}/status`, { status });
+    const res = await request('PATCH', '/leave-requests/' + id + '/status', { status: status });
     invalidate();
     return res;
   }
 
   async function bulkUpdateLeaveStatus(ids, status) {
-    const res = await request('PATCH', '/leave-requests/bulk-status', { ids, status });
+    const res = await request('PATCH', '/leave-requests/bulk-status', { ids: ids, status: status });
     invalidate();
     return res;
   }
@@ -342,13 +373,13 @@ const Store = (() => {
   }
 
   async function updateTicketStatus(id, status) {
-    const res = await request('PATCH', `/tickets/${id}/status`, { status });
+    const res = await request('PATCH', '/tickets/' + id + '/status', { status: status });
     invalidate();
     return res;
   }
 
   async function bulkUpdateTicketStatus(ids, status) {
-    const res = await request('PATCH', '/tickets/bulk-status', { ids, status });
+    const res = await request('PATCH', '/tickets/bulk-status', { ids: ids, status: status });
     invalidate();
     return res;
   }
@@ -356,7 +387,7 @@ const Store = (() => {
   // ---------- shifts & timetable ----------
 
   async function listShifts() {
-    return safe(() => request('GET', '/shifts'), []);
+    return safe(function () { return request('GET', '/shifts'); }, []);
   }
 
   async function addShift(shift) {
@@ -366,22 +397,22 @@ const Store = (() => {
   }
 
   async function updateShift(id, partial) {
-    const res = await request('PATCH', `/shifts/${id}`, partial);
+    const res = await request('PATCH', '/shifts/' + id, partial);
     invalidate();
     return res;
   }
 
   async function deleteShift(id) {
-    await request('DELETE', `/shifts/${id}`);
+    await request('DELETE', '/shifts/' + id);
     invalidate();
   }
 
   async function getTimetable() {
-    return safe(() => request('GET', '/shifts/timetable'), []);
+    return safe(function () { return request('GET', '/shifts/timetable'); }, []);
   }
 
   async function assignShift(userId, shiftId) {
-    const res = await request('POST', `/members/${userId}/shift`, { shiftId });
+    const res = await request('POST', '/members/' + userId + '/shift', { shiftId: shiftId });
     invalidate();
     return res;
   }
@@ -393,31 +424,31 @@ const Store = (() => {
     pendingTickets: 0, zonesCount: 0, routersCount: 0 };
 
   async function getOverview() {
-    return safe(() => request('GET', '/analytics/overview'), emptyOverview);
+    return safe(function () { return request('GET', '/analytics/overview'); }, emptyOverview);
   }
 
   async function getAttendanceReport(from, to) {
-    return safe(() => request('GET', `/attendance/report?from=${from}&to=${to}`), []);
+    return safe(function () { return request('GET', '/attendance/report?from=' + from + '&to=' + to); }, []);
   }
 
   /** Triggers a browser download of the CSV — uses fetch directly (not the JSON `request`
    *  helper) since the response body is a binary blob, not JSON. */
   function exportAttendanceCsv(from, to) {
     const token = localStorage.getItem(TOKEN_KEY);
-    const url = `${API_BASE}/attendance/export?from=${from}&to=${to}`;
+    const url = API_BASE + '/attendance/export?from=' + from + '&to=' + to;
     return fetch(url, { headers: { Authorization: 'Bearer ' + token } })
-      .then(r => r.blob())
-      .then(blob => {
+      .then(function (r) { return r.blob(); })
+      .then(function (blob) {
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = `attendance_${from}_to_${to}.csv`;
+        link.download = 'attendance_' + from + '_to_' + to + '.csv';
         link.click();
       })
-      .catch(() => alert('Could not export attendance CSV. Is the backend running?'));
+      .catch(function () { alert('Could not export attendance CSV. Is the backend running?'); });
   }
 
   async function getAlerts() {
-    return safe(() => request('GET', '/analytics/alerts'), []);
+    return safe(function () { return request('GET', '/analytics/alerts'); }, []);
   }
 
   // ---------- attendance ----------
@@ -435,18 +466,18 @@ const Store = (() => {
   }
 
   return {
-    get, update, invalidate, logActivity, login, logout, requireAuth,
-    loginWithPassword, signupOrganization, joinWithCode,
-    updateOrgProfile,
-    regenerateCode, updateCodeSettings,
-    addZone, updateZone, deleteZone,
-    addRouter, updateRouter, deleteRouter,
-    addMember, importMembers,
-    addTeamMember,
-    submitLeaveRequest, updateLeaveStatus, bulkUpdateLeaveStatus,
-    createTicket, updateTicketStatus, bulkUpdateTicketStatus,
-    listShifts, addShift, updateShift, deleteShift, getTimetable, assignShift,
-    getOverview, getAttendanceReport, exportAttendanceCsv, getAlerts,
-    checkIn, checkOut
+    get: get, update: update, invalidate: invalidate, logActivity: logActivity, login: login, logout: logout, requireAuth: requireAuth,
+    loginWithPassword: loginWithPassword, loginWithApp: loginWithApp, signupOrganization: signupOrganization, joinWithCode: joinWithCode,
+    updateOrgProfile: updateOrgProfile,
+    regenerateCode: regenerateCode, updateCodeSettings: updateCodeSettings,
+    addZone: addZone, updateZone: updateZone, deleteZone: deleteZone,
+    addRouter: addRouter, updateRouter: updateRouter, deleteRouter: deleteRouter,
+    addMember: addMember, importMembers: importMembers,
+    addTeamMember: addTeamMember,
+    submitLeaveRequest: submitLeaveRequest, updateLeaveStatus: updateLeaveStatus, bulkUpdateLeaveStatus: bulkUpdateLeaveStatus,
+    createTicket: createTicket, updateTicketStatus: updateTicketStatus, bulkUpdateTicketStatus: bulkUpdateTicketStatus,
+    listShifts: listShifts, addShift: addShift, updateShift: updateShift, deleteShift: deleteShift, getTimetable: getTimetable, assignShift: assignShift,
+    getOverview: getOverview, getAttendanceReport: getAttendanceReport, exportAttendanceCsv: exportAttendanceCsv, getAlerts: getAlerts,
+    checkIn: checkIn, checkOut: checkOut
   };
 })();
