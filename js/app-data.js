@@ -3,31 +3,40 @@
    backend (deployed on Azure).
 
    Two separate identities are used here:
-   - The SHARED admin account (APP_CREDENTIALS) unlocks org-wide
-     data (all employees, teams, pending queues, org profile) and
-     is used for every org-admin write action (create/update/delete
-     employees, shifts, geofences, wifi, departments, teams, org
-     settings, ticket assignment/status, manual attendance/review).
    - The PERSONAL account (whoever actually logs into the website)
-     is used for "my X" personal views AND for anything an
-     employee creates themselves (leave/WFH requests, device change
-     requests, tickets, check-ins, their own devices) — those need
-     to be attributed to the real person, not the shared admin, so
-     they always require appHasPersonalLogin() and throw a clear
-     error if nobody's logged in via the app yet.
+     is the PRIMARY identity for org-admin actions WHEN the person
+     logged in is themselves an ORG_ADMIN. It is used for every
+     org-admin action (create/update/delete employees, shifts,
+     geofences, wifi, departments, teams, org settings, ticket
+     assignment/status, manual attendance/review) so that each
+     admin only ever sees and changes their OWN organization's
+     data — this matters because a new admin can self-register a
+     brand-new organization through the app, and the website must
+     operate on that admin's own org, not someone else's.
+   - The SHARED admin account (APP_CREDENTIALS) is used as a
+     fallback for org-admin reads/writes whenever the logged-in
+     person is NOT an ORG_ADMIN (e.g. an EMPLOYEE viewing their
+     shift/presence-settings details) or nobody is logged in yet.
+   - Personal-only actions ("my X" views, and anything an employee
+     creates themselves — leave/WFH requests, device change
+     requests, tickets, check-ins, their own devices) always
+     require appHasPersonalLogin() and throw a clear error if
+     nobody's logged in via the app yet.
    ============================================================ */
 
 const APP_API_BASE = 'https://presenza-backend-sumit-hugqdzfwfxeybngu.centralindia-01.azurewebsites.net';
 
-// Shared ORG_ADMIN account — unlocks org-wide data and is required
-// for every admin write action.
+// Shared ORG_ADMIN account — fallback only, used for admin reads/writes
+// if nobody has logged into the website yet.
 const APP_CREDENTIALS = { email: 'saipattnaik13@gmail.com', password: 'Sai12345@' };
 
 let appToken = null;
 let appTokenExpiresAt = 0;
 
 // Personal login (set by appLoginAs when someone actually logs into
-// the website with their own app account).
+// the website with their own app account). This is now the PRIMARY
+// identity used for org-admin actions too, so each admin only ever
+// touches their own organization's data.
 let appUserToken = null;
 let appUserTokenExpiresAt = 0;
 let appUserInfo = null; // { userId, username, email, role } from /auth/me
@@ -71,6 +80,17 @@ function appHasPersonalLogin() {
   return !!(appUserToken && Date.now() < appUserTokenExpiresAt - 60000);
 }
 
+/** True only when the person currently logged in is themselves an
+ *  ORG_ADMIN. Org-admin reads/writes should use THIS check (not
+ *  appHasPersonalLogin() alone) before preferring the personal token —
+ *  an EMPLOYEE's own token has no permission on admin-only endpoints
+ *  (e.g. /api/shifts/{id}, /api/organizations/me/presence-settings),
+ *  which the employee dashboard still needs to read via the shared
+ *  admin account, same as before. */
+function appIsAdminLogin() {
+  return appHasPersonalLogin() && !!appUserInfo && appUserInfo.role === 'ORG_ADMIN';
+}
+
 function parseErrorMessage(pathForFallback, status, parsed) {
   if (parsed && typeof parsed === 'object' && parsed.message) return parsed.message;
   return pathForFallback + ' failed (' + status + ')';
@@ -82,9 +102,29 @@ async function readJsonSafely(res) {
   try { return JSON.parse(text); } catch (e) { return text; }
 }
 
-// ---------- shared-admin-token helpers (org-admin reads + writes) ----------
+// ---------- admin helpers (org-admin reads + writes) ----------
+// If the person logged in is themselves an ORG_ADMIN, use their own
+// token (scoped to their own organization). Otherwise (nobody logged
+// in yet, or an EMPLOYEE is logged in and needs to read an admin-only
+// endpoint like shift/presence-settings details) fall back to the
+// shared admin account, same as before.
 
 async function appRequest(path) {
+  if (appIsAdminLogin()) {
+    const res = await fetch(APP_API_BASE + path, {
+      headers: { Authorization: 'Bearer ' + appUserToken },
+    });
+    const parsed = await readJsonSafely(res);
+    if (!res.ok) {
+      const err = new Error(res.status === 401
+        ? 'Your session expired. Please log in again.'
+        : parseErrorMessage(path, res.status, parsed));
+      err.status = res.status;
+      throw err;
+    }
+    return parsed;
+  }
+
   const token = await appEnsureToken();
   let res = await fetch(APP_API_BASE + path, {
     headers: { Authorization: 'Bearer ' + token },
@@ -105,7 +145,6 @@ async function appRequest(path) {
 }
 
 async function appWriteWithSharedToken(method, path, body) {
-  const token = await appEnsureToken();
   const doFetch = function (tok) {
     return fetch(APP_API_BASE + path, {
       method: method,
@@ -113,6 +152,21 @@ async function appWriteWithSharedToken(method, path, body) {
       body: body !== undefined ? JSON.stringify(body) : undefined,
     });
   };
+
+  if (appIsAdminLogin()) {
+    const res = await doFetch(appUserToken);
+    const parsed = await readJsonSafely(res);
+    if (!res.ok) {
+      const err = new Error(res.status === 401
+        ? 'Your session expired. Please log in again.'
+        : parseErrorMessage(path, res.status, parsed));
+      err.status = res.status;
+      throw err;
+    }
+    return parsed;
+  }
+
+  const token = await appEnsureToken();
   let res = await doFetch(token);
   if (res.status === 401) {
     await appLogin();
