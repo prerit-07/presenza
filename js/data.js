@@ -248,6 +248,10 @@ const Store = (() => {
   function logout() {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(SESSION_KEY);
+    // Also drop the persisted app JWT (see app-data.js) — otherwise the
+    // next person to use this browser would inherit the previous
+    // person's admin session on their very first page load.
+    if (window.appClearPersonalAuth) window.appClearPersonalAuth();
     cache = null;
   }
 

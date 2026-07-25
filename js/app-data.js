@@ -73,8 +73,53 @@ async function appLoginAs(email, password) {
   });
   if (!res.ok) throw new Error('Could not read app profile (' + res.status + ')');
   appUserInfo = await res.json();
+  persistPersonalAuth();
   return appUserInfo;
 }
+
+// Persist the personal (whoever-logged-in) token across page loads.
+// Without this, appUserToken only lives in this page's JS memory —
+// the moment the browser navigates to the next page (a full reload),
+// it resets to null, and every "admin" ends up silently falling back
+// to the shared account on every page except the login page itself.
+// That was a real bug: it meant every org-admin saw the SAME (shared)
+// organization's data everywhere, regardless of who actually logged in.
+const APP_PERSONAL_AUTH_KEY = 'presenzaAppPersonalAuth';
+
+function persistPersonalAuth() {
+  try {
+    localStorage.setItem(APP_PERSONAL_AUTH_KEY, JSON.stringify({
+      token: appUserToken,
+      expiresAt: appUserTokenExpiresAt,
+      info: appUserInfo,
+    }));
+  } catch (e) { /* storage unavailable — personal login just won't survive navigation */ }
+}
+
+function restorePersonalAuth() {
+  try {
+    const raw = localStorage.getItem(APP_PERSONAL_AUTH_KEY);
+    if (!raw) return;
+    const saved = JSON.parse(raw);
+    if (saved && saved.token && saved.expiresAt && Date.now() < saved.expiresAt - 60000) {
+      appUserToken = saved.token;
+      appUserTokenExpiresAt = saved.expiresAt;
+      appUserInfo = saved.info || null;
+    } else {
+      localStorage.removeItem(APP_PERSONAL_AUTH_KEY);
+    }
+  } catch (e) { /* ignore corrupt storage */ }
+}
+
+function clearPersonalAuth() {
+  appUserToken = null;
+  appUserTokenExpiresAt = 0;
+  appUserInfo = null;
+  try { localStorage.removeItem(APP_PERSONAL_AUTH_KEY); } catch (e) { /* ignore */ }
+}
+
+// Restore immediately on every page load, before anything else runs.
+restorePersonalAuth();
 
 function appHasPersonalLogin() {
   return !!(appUserToken && Date.now() < appUserTokenExpiresAt - 60000);
@@ -426,6 +471,7 @@ const AppStore = {
 window.AppStore = AppStore;
 window.appLoginAs = appLoginAs;
 window.appHasPersonalLogin = appHasPersonalLogin;
+window.appClearPersonalAuth = clearPersonalAuth;
 window.APP_CREDENTIALS = APP_CREDENTIALS;
 
 async function appRenderSection(bodyElId, loader, render) {
