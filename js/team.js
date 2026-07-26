@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   let orgId = null;
 
   try {
-    await appEnsureToken();
+    if (!appHasPersonalLogin()) await appEnsureToken();
     const me = await AppStore.getMe();
     banner.innerHTML = `<span class="ps-chip ps-chip-success">Connected</span> Live data from the app, logged in as <b>${escapeAppHtml(me.username)}</b> (${escapeAppHtml(me.role)})`;
   } catch (err) {
