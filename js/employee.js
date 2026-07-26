@@ -39,6 +39,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     return id;
   }
 
+  /** The backend requires a Device row to exist before it'll accept a
+   *  check-in against that deviceId ("Device not found with id: ...")
+   *  — getOrCreateDeviceId() only ever made up a local ID, it never
+   *  told the backend about it. Register it once (ignore "already
+   *  registered" — that just means a previous check-in already did this
+   *  for us), so first-time check-in on a new browser actually works. */
+  async function ensureDeviceRegistered(deviceId) {
+    try {
+      await AppStore.registerMyDevice(deviceId, 'web', navigator.userAgent.slice(0, 100), null);
+    } catch (e) {
+      if (!/already registered/i.test(e.message || '')) throw e;
+    }
+  }
+
   try {
     await appEnsureToken();
     const me = await AppStore.getMe();
@@ -101,9 +115,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     navigator.geolocation.getCurrentPosition(async (pos) => {
       try {
+        const deviceId = getOrCreateDeviceId();
+        await ensureDeviceRegistered(deviceId);
         await AppStore.employeeCheckIn(
           myShift.shiftId,
-          getOrCreateDeviceId(),
+          deviceId,
           pos.coords.latitude,
           pos.coords.longitude,
           pos.coords.accuracy
