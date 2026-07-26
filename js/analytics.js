@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   let employees = [], attendance = [], orgTickets = [];
   try {
-    await appEnsureToken();
+    if (!appHasPersonalLogin()) await appEnsureToken();
   } catch (err) {
     document.getElementById('alertsList').innerHTML = `<div class="ps-empty">Couldn't connect to the app (${escapeAppHtml(err.message)}).</div>`;
     return;
