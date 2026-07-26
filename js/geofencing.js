@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', async () => {
   const grid = document.getElementById('zoneGrid');
   const banner = document.getElementById('appConnBanner');
-  const addBtn = document.getElementById('addZoneBtn');
 
   const CENTER = [30.7413, 76.7684];
   const latLngOffsets = [
@@ -118,23 +117,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   await loadZones();
-
-  addBtn?.addEventListener('click', () => {
-    PSModal.open({
-      title: 'Add geofence zone',
-      submitLabel: 'Add zone',
-      fields: [
-        { name: 'buildingName', label: 'Building / zone name', placeholder: 'e.g. HQ - Main Building' },
-        { name: 'latitude', label: 'Latitude', type: 'number', placeholder: 'e.g. 30.7413' },
-        { name: 'longitude', label: 'Longitude', type: 'number', placeholder: 'e.g. 76.7684' },
-        { name: 'radius', label: 'Radius (meters)', type: 'number', value: '100' },
-      ],
-      onSubmit: async (values) => {
-        await AppStore.createGeofence(orgId, Number(values.latitude), Number(values.longitude), Number(values.radius), values.buildingName, []);
-        await loadZones();
-      },
-    });
-  });
 
   grid.addEventListener('click', async (e) => {
     const editBtn = e.target.closest('.btn-edit-zone');
