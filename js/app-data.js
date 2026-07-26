@@ -148,26 +148,37 @@ async function readJsonSafely(res) {
 }
 
 // ---------- admin helpers (org-admin reads + writes) ----------
-// If the person logged in is themselves an ORG_ADMIN, use their own
-// token (scoped to their own organization). Otherwise (nobody logged
-// in yet, or an EMPLOYEE is logged in and needs to read an admin-only
-// endpoint like shift/presence-settings details) fall back to the
-// shared admin account, same as before.
-
+// Several of these endpoints (getShiftById, getPresenceSettings,
+// getGeofences, ...) are NOT actually admin-only on their backend —
+// any authenticated user, including a plain EMPLOYEE, can read them
+// scoped to their OWN organization (confirmed by reading their
+// controllers directly). So always try whoever is currently logged
+// in first, with THEIR OWN token — that's the only way the data is
+// guaranteed to be scoped to their real organization.
+// Only if that call comes back 403 (their role genuinely isn't
+// allowed to read this specific endpoint, e.g. an EMPLOYEE hitting a
+// true admin-only list) do we fall back to the shared demo account,
+// so something still renders instead of a hard error. A 401 is NOT
+// treated as "fall back" — that means their session expired, and
+// falling back would silently show the wrong organization's data.
 async function appRequest(path) {
-  if (appIsAdminLogin()) {
+  if (appHasPersonalLogin()) {
     const res = await fetch(APP_API_BASE + path, {
       headers: { Authorization: 'Bearer ' + appUserToken },
     });
-    const parsed = await readJsonSafely(res);
-    if (!res.ok) {
-      const err = new Error(res.status === 401
-        ? 'Your session expired. Please log in again.'
-        : parseErrorMessage(path, res.status, parsed));
-      err.status = res.status;
-      throw err;
+    if (res.status !== 403) {
+      const parsed = await readJsonSafely(res);
+      if (!res.ok) {
+        const err = new Error(res.status === 401
+          ? 'Your session expired. Please log in again.'
+          : parseErrorMessage(path, res.status, parsed));
+        err.status = res.status;
+        throw err;
+      }
+      return parsed;
     }
-    return parsed;
+    // 403 — this specific login isn't allowed to read this endpoint.
+    // Fall through to the shared-account fallback below.
   }
 
   const token = await appEnsureToken();
