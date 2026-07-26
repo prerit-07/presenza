@@ -419,19 +419,24 @@ const AppStore = {
   },
 
   // ---------- org-admin write actions: departments ----------
-  createDepartment: function (departmentName) {
-    return appPost('/api/departments', { departmentName: departmentName });
+  // orgId is required by their backend's validation (@NotNull on
+  // DepartmentRequest.orgId) even though the service derives the real
+  // organization from the caller's token — same class of bug as
+  // shifts. Pass the value from AppStore.getOrganization().orgId.
+  createDepartment: function (orgId, departmentName) {
+    return appPost('/api/departments', { orgId: orgId, departmentName: departmentName });
   },
-  updateDepartment: function (id, departmentName) {
-    return appPut('/api/departments/' + id, { departmentName: departmentName });
+  updateDepartment: function (id, orgId, departmentName) {
+    return appPut('/api/departments/' + id, { orgId: orgId, departmentName: departmentName });
   },
 
   // ---------- org-admin write actions: teams ----------
-  createTeam: function (teamName, managerEmployeeId) {
-    return appPost('/api/teams', { teamName: teamName, managerEmployeeId: managerEmployeeId });
+  // Same as departments — TeamRequest.orgId is @NotNull.
+  createTeam: function (orgId, teamName, managerEmployeeId) {
+    return appPost('/api/teams', { orgId: orgId, teamName: teamName, managerEmployeeId: managerEmployeeId });
   },
-  updateTeam: function (id, teamName, managerEmployeeId) {
-    return appPut('/api/teams/' + id, { teamName: teamName, managerEmployeeId: managerEmployeeId });
+  updateTeam: function (id, orgId, teamName, managerEmployeeId) {
+    return appPut('/api/teams/' + id, { orgId: orgId, teamName: teamName, managerEmployeeId: managerEmployeeId });
   },
 
   // ---------- org-admin write actions: organization + presence settings ----------

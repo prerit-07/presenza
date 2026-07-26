@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   let employees = [];
   let teams = [];
   let departments = [];
+  let orgId = null;
 
   try {
     await appEnsureToken();
@@ -20,6 +21,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   try { employees = await AppStore.getAllEmployees(); } catch { /* non-fatal */ }
+  try { orgId = (await AppStore.getOrganization()).orgId; } catch { /* non-fatal, create/edit will just fail with a clear error */ }
   const employeeById = {}; employees.forEach(e => { employeeById[e.employeeId] = e.employeeName; });
 
   function employeeOptions() {
@@ -83,7 +85,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         { name: 'managerEmployeeId', label: 'Manager', type: 'select', options: employeeOptions(), required: false },
       ],
       onSubmit: async (values) => {
-        await AppStore.createTeam(values.teamName, values.managerEmployeeId ? Number(values.managerEmployeeId) : null);
+        await AppStore.createTeam(orgId, values.teamName, values.managerEmployeeId ? Number(values.managerEmployeeId) : null);
         await loadTeams();
       },
     });
@@ -105,7 +107,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         { name: 'managerEmployeeId', label: 'Manager', type: 'select', options: employeeOptions(), required: false, value: t.managerEmployeeId != null ? String(t.managerEmployeeId) : '' },
       ],
       onSubmit: async (values) => {
-        await AppStore.updateTeam(teamId, values.teamName, values.managerEmployeeId ? Number(values.managerEmployeeId) : null);
+        await AppStore.updateTeam(teamId, orgId, values.teamName, values.managerEmployeeId ? Number(values.managerEmployeeId) : null);
         await loadTeams();
       },
     });
@@ -119,7 +121,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         { name: 'departmentName', label: 'Department name', placeholder: 'e.g. Engineering' },
       ],
       onSubmit: async (values) => {
-        await AppStore.createDepartment(values.departmentName);
+        await AppStore.createDepartment(orgId, values.departmentName);
         await loadDepartments();
       },
     });
@@ -140,7 +142,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         { name: 'departmentName', label: 'Department name', value: d.departmentName },
       ],
       onSubmit: async (values) => {
-        await AppStore.updateDepartment(departmentId, values.departmentName);
+        await AppStore.updateDepartment(departmentId, orgId, values.departmentName);
         await loadDepartments();
       },
     });
