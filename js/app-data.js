@@ -372,11 +372,16 @@ const AppStore = {
   },
 
   // ---------- org-admin write actions: shifts ----------
-  createShift: function (shiftName, startTime, endTime, allowedLateMinutes, geofenceId) {
-    return appPost('/api/shifts', { shiftName: shiftName, startTime: startTime, endTime: endTime, allowedLateMinutes: allowedLateMinutes, geofenceId: geofenceId });
+  // orgId is required by their backend's validation (@NotNull on
+  // ShiftRequest.orgId) even though the service itself derives the
+  // real organization from the caller's token — omitting it fails
+  // with a 400 before the request even reaches business logic.
+  // Pass the value from AppStore.getOrganization().orgId.
+  createShift: function (orgId, shiftName, startTime, endTime, allowedLateMinutes, geofenceId) {
+    return appPost('/api/shifts', { orgId: orgId, shiftName: shiftName, startTime: startTime, endTime: endTime, allowedLateMinutes: allowedLateMinutes, geofenceId: geofenceId });
   },
-  updateShift: function (id, shiftName, startTime, endTime, allowedLateMinutes, geofenceId) {
-    return appPut('/api/shifts/' + id, { shiftName: shiftName, startTime: startTime, endTime: endTime, allowedLateMinutes: allowedLateMinutes, geofenceId: geofenceId });
+  updateShift: function (id, orgId, shiftName, startTime, endTime, allowedLateMinutes, geofenceId) {
+    return appPut('/api/shifts/' + id, { orgId: orgId, shiftName: shiftName, startTime: startTime, endTime: endTime, allowedLateMinutes: allowedLateMinutes, geofenceId: geofenceId });
   },
 
   // ---------- org-admin write actions: geofences ----------

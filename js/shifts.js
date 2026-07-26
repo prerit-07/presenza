@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   let shifts = [];
   let geofences = [];
+  let orgId = null;
 
   function fmt(t) {
     if (!t) return '—';
@@ -30,6 +31,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   try { geofences = await AppStore.getGeofences(); } catch { /* non-fatal */ }
+  try { orgId = (await AppStore.getOrganization()).orgId; } catch { /* non-fatal, create/edit will just fail with a clear error */ }
 
   async function loadShifts() {
     try {
@@ -88,7 +90,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       ],
       onSubmit: async (values) => {
         await AppStore.createShift(
-          values.shiftName, values.startTime, values.endTime,
+          orgId, values.shiftName, values.startTime, values.endTime,
           Number(values.allowedLateMinutes || 0),
           values.geofenceId ? Number(values.geofenceId) : null
         );
@@ -117,7 +119,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       ],
       onSubmit: async (values) => {
         await AppStore.updateShift(
-          shiftId, values.shiftName, values.startTime, values.endTime,
+          shiftId, orgId, values.shiftName, values.startTime, values.endTime,
           Number(values.allowedLateMinutes || 0),
           values.geofenceId ? Number(values.geofenceId) : null
         );
