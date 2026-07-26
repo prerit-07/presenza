@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', async () => {
   const tbody = document.getElementById('wifiTableBody');
   const banner = document.getElementById('appConnBanner');
+  const addBtn = document.getElementById('addRouterBtn');
 
   let geofences = [];
   let networks = []; // flattened, each tagged with geofenceId + buildingName
@@ -46,6 +47,27 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   await loadNetworks();
+
+  addBtn?.addEventListener('click', () => {
+    if (!geofences.length) {
+      alert('Add a geofence zone first (Geofencing page) before registering a WiFi network.');
+      return;
+    }
+    PSModal.open({
+      title: 'Add router',
+      subtitle: 'Register a real WiFi access point on the app for BSSID verification.',
+      submitLabel: 'Add router',
+      fields: [
+        { name: 'geofenceId', label: 'Zone', type: 'select', options: geofenceOptions() },
+        { name: 'ssid', label: 'SSID', placeholder: 'e.g. Campus 5G' },
+        { name: 'bssid', label: 'BSSID', placeholder: 'e.g. 00:1A:2B:3C:4D:5E' },
+      ],
+      onSubmit: async (values) => {
+        await AppStore.createWifiNetwork(Number(values.geofenceId), values.ssid, values.bssid);
+        await loadNetworks();
+      },
+    });
+  });
 
   tbody.addEventListener('click', (e) => {
     const btn = e.target.closest('.btn-edit-wifi');
