@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       pendingDeviceRequests = [], orgTickets = [];
 
   try {
-    if (!appHasPersonalLogin()) await appEnsureToken();
+    await appEnsureToken();
     me = await AppStore.getMe();
   } catch (err) {
     document.querySelectorAll('.ps-stat-value').forEach(el => el.textContent = '—');
