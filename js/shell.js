@@ -24,12 +24,6 @@ const PS_NAV = {
     { key: 'tickets', label: 'Device Requests', href: 'tickets.html', icon: 'ticket' },
     { key: 'support-tickets', label: 'Support Tickets', href: 'app-tickets.html', icon: 'ticket' }
   ],
-  manager: [
-    { key: 'overview', label: 'Overview', href: 'manager.html', icon: 'home' },
-    { key: 'shifts', label: 'Shifts & Timetable', href: 'shifts.html', icon: 'calendar' },
-    { key: 'members', label: 'Members', href: 'manager-members.html', icon: 'users' },
-    { key: 'team', label: 'Team', href: 'manager-team.html', icon: 'usersGroup' }
-  ],
   employee: [
     { key: 'home', label: 'Home', href: 'employee.html', icon: 'home' }
   ]
@@ -306,7 +300,7 @@ window.PSModal = (() => {
         <span class="b b7"></span><span class="b b8"></span>
       </div>
       <div class="ps-hero-inner">
-        <a href="${role === 'organization' ? 'organization.html' : role === 'manager' ? 'manager.html' : 'employee.html'}" class="ps-hero-logo">
+        <a href="${role === 'organization' ? 'organization.html' : 'employee.html'}" class="ps-hero-logo">
           <span class="mark"><img src="../images/presenza-logo.svg" alt="Presenza" class="ps-logo"></span>
           <span class="name">Presenza</span>
         </a>

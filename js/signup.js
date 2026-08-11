@@ -28,8 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   function redirectForRole(role) {
-    if (role === 'manager') window.location.href = 'manager.html';
-    else if (role === 'employee') window.location.href = 'employee.html';
+    if (role === 'employee') window.location.href = 'employee.html';
     else window.location.href = 'organization.html';
   }
 

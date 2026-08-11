@@ -53,9 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     loginBtn.disabled = false;
 
-    if (session.role === 'manager') {
-      window.location.href = 'manager.html';
-    } else if (session.role === 'employee') {
+    if (session.role === 'employee') {
       window.location.href = 'employee.html';
     } else {
       window.location.href = 'organization.html';
