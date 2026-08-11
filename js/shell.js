@@ -36,6 +36,132 @@ const PS_NAV = {
 };
 
 /* ============================================================
+   Real notifications — replaces the old hardcoded mock list.
+   Pulls recent activity from AppStore (the live app backend) and
+   renders it into the bell dropdown. Org/manager see org-wide
+   activity (pending requests, recent check-ins); employees see
+   their own request/ticket/check-in status.
+   ============================================================ */
+function psTimeAgo(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d)) return '';
+  const mins = Math.floor((Date.now() - d.getTime()) / 60000);
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return mins + ' min ago';
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return hrs + ' hr ago';
+  const days = Math.floor(hrs / 24);
+  return days + (days === 1 ? ' day ago' : ' days ago');
+}
+
+function psIsToday(iso) {
+  if (!iso) return false;
+  const d = new Date(iso);
+  return !isNaN(d) && d.toDateString() === new Date().toDateString();
+}
+
+async function psBuildNotifications(role) {
+  const items = [];
+
+  if (role === 'organization' || role === 'manager') {
+    let nameByUserId = {};
+    try {
+      const employees = (await AppStore.getAllEmployees()) || [];
+      employees.forEach(e => { nameByUserId[e.userId] = e.employeeName; });
+    } catch (e) { /* non-fatal — items just fall back to generic text */ }
+
+    try {
+      const deviceReqs = (await AppStore.getPendingDeviceChangeRequests()) || [];
+      deviceReqs.forEach(r => items.push({
+        icon: 'ticket',
+        text: 'Device change request needs review' + (nameByUserId[r.userId] ? ' — ' + nameByUserId[r.userId] : ''),
+        time: r.requestedAt,
+      }));
+    } catch (e) { /* non-fatal */ }
+
+    try {
+      const attReqs = (await AppStore.getPendingAttendanceRequests()) || [];
+      attReqs.forEach(r => items.push({
+        icon: 'fileText',
+        text: (r.requestType === 'WFH' ? 'WFH' : 'Leave') + ' request needs review' + (nameByUserId[r.userId] ? ' — ' + nameByUserId[r.userId] : ''),
+        time: r.requestedAt || r.startDate,
+      }));
+    } catch (e) { /* non-fatal */ }
+
+    try {
+      const attendance = (await AppStore.getAttendanceList()) || [];
+      attendance
+        .slice()
+        .sort((a, b) => new Date(b.checkinTime || 0) - new Date(a.checkinTime || 0))
+        .slice(0, 3)
+        .forEach(a => items.push({
+          icon: 'checkSquare',
+          text: (nameByUserId[a.userId] || 'An employee') + ' checked in',
+          time: a.checkinTime,
+        }));
+    } catch (e) { /* non-fatal */ }
+  } else {
+    try {
+      const myReqs = (await AppStore.getMyAttendanceRequests()) || [];
+      myReqs
+        .filter(r => (r.status || '').toUpperCase() !== 'PENDING')
+        .forEach(r => items.push({
+          icon: 'fileText',
+          text: (r.requestType === 'WFH' ? 'WFH' : 'Leave') + ' request ' + (r.status || '').toLowerCase(),
+          time: r.reviewedAt || r.startDate,
+        }));
+    } catch (e) { /* non-fatal */ }
+
+    try {
+      const myDeviceReqs = (await AppStore.getMyDeviceChangeRequests()) || [];
+      myDeviceReqs.forEach(r => items.push({
+        icon: 'ticket',
+        text: 'Device change request ' + (r.status || 'pending').toLowerCase(),
+        time: r.reviewedAt || r.requestedAt,
+      }));
+    } catch (e) { /* non-fatal */ }
+
+    try {
+      const myTickets = (await AppStore.getMyTickets()) || [];
+      myTickets.slice(0, 3).forEach(t => items.push({
+        icon: 'ticket',
+        text: 'Ticket "' + (t.subject || 'Support request') + '" — ' + (t.status || 'open').toLowerCase(),
+        time: t.updatedAt || t.createdAt,
+      }));
+    } catch (e) { /* non-fatal */ }
+
+    try {
+      const myAttendance = (await AppStore.getMyAttendance()) || [];
+      const today = myAttendance.find(a => psIsToday(a.checkinTime));
+      if (today) items.push({
+        icon: 'mapPin',
+        text: 'You checked in today' + (today.wifiVerified === false ? ' — pending Wi-Fi verification' : ''),
+        time: today.checkinTime,
+      });
+    } catch (e) { /* non-fatal */ }
+  }
+
+  items.sort((a, b) => new Date(b.time || 0) - new Date(a.time || 0));
+  return items.slice(0, 5);
+}
+
+function psRenderNotifItems(items) {
+  if (!items.length) {
+    return '<div class="ps-notif-empty" style="padding:16px; font-size:12.5px; color:#71717a;">No new notifications.</div>';
+  }
+  return items.map(n => `
+    <div class="ps-notif-item">
+      <div class="ps-notif-icon">${psIcon(n.icon, 15)}</div>
+      <div>
+        <div class="ps-notif-text">${escapeAppHtml(n.text)}</div>
+        <div class="ps-notif-time">${psTimeAgo(n.time)}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ============================================================
    PSModal — shared, styled replacement for prompt()/confirm().
    Usage:
      PSModal.open({
@@ -171,13 +297,6 @@ window.PSModal = (() => {
     const navItems = PS_NAV[role] || [];
     const initials = (session?.name || 'A').slice(0, 2).toUpperCase();
 
-    const mockNotifications = [
-      { icon: 'checkSquare', text: 'Rahul Sharma checked in at Room 101', time: '2 min ago' },
-      { icon: 'mapPin', text: 'New geofence zone added', time: '15 min ago' },
-      { icon: 'ticket', text: 'Device change request needs review', time: '1 hr ago' },
-      { icon: 'fileText', text: 'Leave request approved for Priya', time: '3 hr ago' }
-    ];
-
     const hero = document.createElement('header');
     hero.className = 'ps-hero';
     hero.innerHTML = `
@@ -202,15 +321,7 @@ window.PSModal = (() => {
           </button>
           <div class="ps-notif-panel" id="psNotifPanel">
             <div class="ps-notif-header">Notifications</div>
-            ${mockNotifications.map(n => `
-              <div class="ps-notif-item">
-                <div class="ps-notif-icon">${psIcon(n.icon, 15)}</div>
-                <div>
-                  <div class="ps-notif-text">${n.text}</div>
-                  <div class="ps-notif-time">${n.time}</div>
-                </div>
-              </div>
-            `).join('')}
+            <div id="psNotifList" class="ps-notif-loading" style="padding:16px; font-size:12.5px; color:#71717a;">Loading…</div>
           </div>
 
           <button class="ps-hero-avatar" id="psAvatarBtn">${initials}</button>
@@ -266,6 +377,22 @@ window.PSModal = (() => {
       accountPanel?.classList.remove('open');
       notifPanel.classList.toggle('open');
     });
+
+    (async () => {
+      const notifList = document.getElementById('psNotifList');
+      if (!notifList) return;
+      if (typeof AppStore === 'undefined') {
+        notifList.outerHTML = `<div id="psNotifList" class="ps-notif-empty" style="padding:16px; font-size:12.5px; color:#71717a;">No new notifications.</div>`;
+        return;
+      }
+      try {
+        if (typeof appEnsureToken === 'function') await appEnsureToken().catch(() => {});
+        const items = await psBuildNotifications(role);
+        notifList.outerHTML = `<div id="psNotifList">${psRenderNotifItems(items)}</div>`;
+      } catch (e) {
+        notifList.outerHTML = `<div id="psNotifList" class="ps-notif-empty" style="padding:16px; font-size:12.5px; color:#71717a;">Couldn't load notifications.</div>`;
+      }
+    })();
 
     const avatarBtn = document.getElementById('psAvatarBtn');
     const accountPanel = document.getElementById('psAccountPanel');
