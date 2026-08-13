@@ -1,0 +1,20 @@
+.attendance-filter-bar {
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.attendance-filter-select {
+  padding: 10px 16px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--surface-border);
+  background: var(--surface-100);
+  color: var(--text-700);
+  font-weight: 700;
+  font-size: 13px;
+  font-family: var(--font-body);
+  cursor: pointer;
+}
+.attendance-filter-select:focus { outline: none; border-color: var(--brand-400); }
+.attendance-export-btn { margin-left: auto; }

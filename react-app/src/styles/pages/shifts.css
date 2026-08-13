@@ -1,0 +1,5 @@
+.shift-time { font-family: var(--font-heading); font-size: 19px; font-weight: 800; color: #fff; margin-bottom: 8px; position: relative; }
+.shift-name { font-size: 13.5px; font-weight: 700; color: #fff; margin-bottom: 4px; position: relative; }
+.shift-grace { font-size: 11.5px; color: rgba(255,255,255,0.7); font-weight: 600; position: relative; }
+.shift-assigned { font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 6px; position: relative; }
+.shift-card-actions { display:flex; gap:8px; margin-top:10px; position:relative; }

@@ -229,16 +229,6 @@ const Store = (() => {
     return saveAppSession(appProfile);
   }
 
-  async function signupOrganization(payload) {
-    const res = await request('POST', '/auth/signup/organization', payload);
-    return saveAuth(res);
-  }
-
-  async function joinWithCode(payload) {
-    const res = await request('POST', '/auth/join', payload);
-    return saveAuth(res);
-  }
-
   function login(role, name) {
     // Legacy demo helper — no longer used now that login.js calls loginWithApp().
     localStorage.setItem(SESSION_KEY, JSON.stringify({ role: role, name: name || 'ABC' }));
@@ -471,7 +461,7 @@ const Store = (() => {
 
   return {
     get: get, update: update, invalidate: invalidate, logActivity: logActivity, login: login, logout: logout, requireAuth: requireAuth,
-    loginWithPassword: loginWithPassword, loginWithApp: loginWithApp, signupOrganization: signupOrganization, joinWithCode: joinWithCode,
+    loginWithPassword: loginWithPassword, loginWithApp: loginWithApp,
     updateOrgProfile: updateOrgProfile,
     regenerateCode: regenerateCode, updateCodeSettings: updateCodeSettings,
     addZone: addZone, updateZone: updateZone, deleteZone: deleteZone,
