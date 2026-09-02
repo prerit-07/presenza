@@ -26,7 +26,7 @@ export default function AttendancePage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [records, setRecords] = useState<Attendance[] | null>(null);
   const [loadErr, setLoadErr] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState('All status');
+  const [statusFilter, setStatusFilter] = useState('');
 
   const [addOpen, setAddOpen] = useState(false);
   const [correctRec, setCorrectRec] = useState<Attendance | null>(null);
@@ -62,9 +62,8 @@ export default function AttendancePage() {
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const filterKey = statusFilter.toUpperCase().replace(' ', '_');
-  const rows = (records || []).filter((r) => statusFilter === 'All status' || (r.status || 'ABSENT').toUpperCase() === filterKey);
+const filterKey = statusFilter.toUpperCase().replace(' ', '_');
+const rows = (records || []).filter((r) => statusFilter === '' || (r.status || 'ABSENT').toUpperCase() === statusFilter);
 
   const addFields: ModalField[] = [
     { name: 'employeeId', label: 'Employee', type: 'select', options: employeeOptions() },
@@ -101,13 +100,13 @@ export default function AttendancePage() {
         <>
           <div className="ps-card attendance-filter-bar">
             <select className="attendance-filter-select" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-              <option>All status</option>
-              <option>Present</option>
-              <option>Absent</option>
-              <option>Late</option>
-              <option>Pending</option>
-              <option>Rejected</option>
-            </select>
+  <option value="">All status</option>
+  <option value="PRESENT">Present</option>
+  <option value="ABSENT">Absent</option>
+  <option value="LATE">Late</option>
+  <option value="PENDING">Pending</option>
+  <option value="REJECTED">Rejected</option>
+</select>
             <button className="ps-btn ps-btn-primary" onClick={() => setAddOpen(true)}>Add manual entry</button>
             <button className="ps-btn ps-btn-primary attendance-export-btn" onClick={exportCsv}>Export CSV</button>
           </div>
